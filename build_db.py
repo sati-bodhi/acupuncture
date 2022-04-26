@@ -174,6 +174,7 @@ def get_basic_data(connect: Type[sqlite3.Connection]) -> None:
     meridian["meridianName_tr"] = ["".join(list(
         chain.from_iterable(
             pinyin(item, style = Style.NORMAL)))).capitalize() for item in meridian_list_abbrev]
+    meridian["ID"] = ["LR" if tag == "LV" else tag for tag in meridian["ID"]]
 
     # aliases
 
@@ -313,6 +314,36 @@ def parse_image_id(img_id: str) -> List[str]:
         return [img_id]
 
 
+def has_numbers(inputString):
+    return any(char.isdigit() for char in inputString)
+
+
+def get_column(connect: Type[sqlite3.Connection], column, table):
+
+    c = connect.cursor()
+    c.execute(f'''
+    SELECT {column} FROM {table}; 
+    ''')
+
+    # field_name = [field[0] for field in c.description]
+    values = [value[0] for value in c.fetchall()]
+
+    print(values)
+
+    return values
+
+
+def update_meridian_route_img_tag(connect: Type[sqlite3.Connection]):
+    """Update non-numeric image tags to 'meridianRoute' category. """
+
+    c = connect.cursor()
+    c.executescript(f"""
+    UPDATE Images
+        SET category = "meridianRoute"
+        WHERE NOT ID GLOB "*[0-9]*"AND category == "acuLoc";
+    """)
+
+
 def convert_to_binary_data(filename) -> bytes:
     """Convert digital data to binary format"""
     with open(filename, 'rb') as file:
@@ -342,11 +373,14 @@ def import_images(connect: Type[sqlite3.Connection], folder: str, source: str) -
 
 if __name__ == '__main__':
     with sql.connect("acu.db") as conn:  # establish connection to database
-        initialize_database(conn)
-        get_basic_data(conn)
-        get_extraordinary_route_data(conn)
-        get_location_data(conn)
-        import_images(conn, "meridianRoute", "胡軍平_中醫經絡穴位2011")
+        # initialize_database(conn)
+        # get_basic_data(conn)
+        # get_extraordinary_route_data(conn)
+        # get_location_data(conn)
+        # import_images(conn, "acuLoc", "王華_針灸學2012")
+
+        # get_column(conn, "ID", "Images")
+        update_meridian_route_img_tag(conn)
 #
 #         conn.commit()
 #
