@@ -1,0 +1,4 @@
+baseURL = 'http://example.org/'
+languageCode = 'en-us'
+title = 'Data Assistant for Classical Acupuncture Practitioners'
+theme = "hugo-book"

@@ -1,0 +1,5 @@
+setup.py
+acupuncture.egg-info/PKG-INFO
+acupuncture.egg-info/SOURCES.txt
+acupuncture.egg-info/dependency_links.txt
+acupuncture.egg-info/top_level.txt

@@ -1,0 +1,21 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'main/css/sidebar.css' %}">
+{% endblock %}
+
+{% block navbar %}
+{% include 'main/include/navbar.html' %}
+{% endblock %}
+
+{% block pageheader %}
+<div class="container-fluid">
+    <div class="row flex-xl-nowrap">
+        <div class="col-12 col-md-3 col-xl-2 bd-sidebar">
+          {% block sidebar %}
+          {% endblock %}
+        </div>
+    </div>
+</div>
+{%  endblock %}

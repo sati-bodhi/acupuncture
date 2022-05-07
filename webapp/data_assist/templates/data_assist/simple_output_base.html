@@ -1,0 +1,12 @@
+{% extends 'data_assist/base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'data_assist/css/simple.css' %}">
+<link rel="stylesheet" href="{% static 'data_assist/css/sidebar.css' %}">
+<link rel="stylesheet" href="{% static 'data_assist/css/book.css' %}">
+{% endblock %}
+
+{% block pageheader %}
+{% include 'data_assist/include/navbar.html' %}
+{% endblock %}

@@ -1,0 +1,31 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+.imgbox {
+    display: grid;
+    height: 100%;
+}
+.center-fit {
+    max-width: 50%;
+    max-height: 48vh;
+    margin: auto;
+}
+
+.icon {
+    width:100px; /* you can use % */
+    height: auto;
+}
+
+.sidepane {
+    width:auto;
+    height: 500px;
+}
+
+.logo-image{
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-top: -6px;
+}

@@ -1,0 +1,34 @@
+body, html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.container {
+  width: 100%;
+  height: 80%;
+}
+
+.leftpane {
+    width: 10%;
+    height: 100%;
+    float: left;
+}
+
+.middlepane {
+    width: 50%;
+    height: 100%;
+    float: left;
+}
+
+.rightpane {
+  width: 25%;
+  height: 100%;
+  position: relative;
+  float: right;
+}
+
+.toppane {
+  width: 100%;
+  height: 100px;
+}

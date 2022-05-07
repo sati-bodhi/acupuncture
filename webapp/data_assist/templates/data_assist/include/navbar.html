@@ -1,0 +1,36 @@
+{%load static%}
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <a class="navbar-brand" href="{% url 'index' %}">
+        <div class="logo-image">
+            <img class ="icon img-fluid" style="float: left;" src="{% static 'main/images/logo_nobg.png' %}" alt="古典針灸">
+        </div>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'query' %}">Query</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'diagnose' %}">Diagnostics</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav">
+        </ul>
+    </div>
+</nav>
+
+<!-- Highlight active navbar item -->
+<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+    $(function(){
+        $('a').each(function(){
+            if ($(this).prop('href') == window.location.href) {
+                $(this).addClass('active'); $(this).parents('li').addClass('active');
+            }
+        });
+    });
+</script>
