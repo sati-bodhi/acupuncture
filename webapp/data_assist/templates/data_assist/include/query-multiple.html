@@ -1,0 +1,11 @@
+
+
+{% if multiple %}
+{% block multipe-heading %}
+{% endblock %}
+<div class="col-6 py-3 mx-5">
+  <p>請選一：</p>
+    {% block multiple-for-loop %}
+    {% endblock %}
+</div>
+{% endif %}

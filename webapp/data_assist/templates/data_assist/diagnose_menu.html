@@ -1,0 +1,67 @@
+{% load static %}
+
+<div class="container col py-3">
+    <h1 class="py-3 justify-content-center display-2">診斷與治療</h1>
+    <ul class="fs-4 py-2 list-unstyled">
+
+        <div class="row py-2">
+            <h2 class="py-3">八綱辨證</h2>
+            <li>
+                總體狀態：<a href="{% url 'eight_principles' %}" class="href">氣血陰陽</a>
+            </li>
+        </div>
+
+        <div class="row py-2">
+            <h2 class="py-3">能量使用層</h2>
+            <h3 class="pb-2 text-secondary"><em>十二正經</em></h3>
+            <li>
+                外邪入侵：<a href="{% url 'channels' %}" class="href">六經與六氣</a>
+            </li>
+            <li>
+                調時差：<a href="{% url 'channels' %}" class="href">子午流注</a>
+            </li>
+        </div>
+
+        <div class="row py-2">
+            <h3 class="pb-2 text-secondary"><em>五行</em></h3>
+            <li>
+                急性內傷：古典穴位<a href="{% url 'elements' %}" class="href">四針法</a>
+            </li>
+            <li>
+                亞急性、慢性內傷：<a href="{% url 'elements' %}" class="href">募俞穴</a>
+            </li>
+        </div>
+
+
+        <div class="row py-2">
+            <h2 class="py-3">能量分配層</h2>
+            <li>
+                <a href="{% url 'extraordinary' %}" class="href">奇經八脈</a>
+            </li>
+        </div>
+
+        <div class="row py-2">
+            <h2 class="py-3">輔助能量系統</h2>
+            <h3 class="pb-2 text-secondary"><em>十二經筋 <br>
+            <small class="d-none">（十二正經在體表的筋膜系統）</small></em></h3>
+            <li>
+                季節性痹症：<a href="{% url 'jingjin' %}" class="href">經筋</a>療法
+            </li>
+        </div>
+        <div class="row py-2">
+            <h3 class="pb-2 text-secondary"><em>十二經別<br><small class="d-none">（臟腑與十二正經的聯繫）</small></em></h3>
+            <li>
+                一天特定時段發病：<a href="{% url 'jingbie' %}" class="href">經別</a>療法
+            </li>
+        </div>
+        <div class="row py-2">
+            <h3 class="pb-2 text-secondary"><em>十六絡脈</em></h3>
+            <li>
+                無脈象的特殊症狀：<a href="{% url 'luo' %}" class="href">縱絡與橫絡</a>
+            </li>
+            <li>
+                扭傷與疼痛：<a href="{% url 'group_luo' %}" class="href">組絡</a>療法
+            </li>
+        </div>
+    </ul>
+</div>
