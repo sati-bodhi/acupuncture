@@ -1,0 +1,51 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+診斷
+{% endblock %}
+
+{% block fieldset_content %}
+{% if earth_energy %}
+<legend class="form-label py-4"><h2>脾－胃能量</h2></legend>
+<div class="container row py-3">
+    <div class="form-check col py-sm-2">
+        <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="spEnergy" id="sp_deficient" value="-">
+        <label class="form-check-label" for="sp_deficient">
+        虛
+        </label>
+    </div>
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="spEnergy" id="sp_excess" value="+">
+      <label class="form-check-label" for="sp_excess">
+        實
+      </label>
+    </div>
+    <div class="form-check row py-sm-2">
+        <input type="checkbox" class="form-check-input" id="sp_mother_overload" name="spMotherOverload" value=True>
+        <label class="form-check-label" for="mother_overload">{{ E_mother }}能量有餘，<br>{{ E_minister }}能量正常。</label>
+    </div>
+</div>
+<hr>
+{% endif %}
+
+<legend class="form-label py-4"><h2>{{ lord }}能量</h2></legend>
+<div class="container row py-3">
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="organEnergy" id="deficient" value="-">
+      <label class="form-check-label" for="deficient">
+        虛
+      </label>
+    </div>
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="organEnergy" id="excess" value="+">
+      <label class="form-check-label" for="excess">
+        實
+      </label>
+    </div>
+    <div class="form-check row py-sm-2">
+        <input type="checkbox" class="form-check-input" id="mother_overload" name="motherOverload" value=True>
+        <label class="form-check-label" for="mother_overload">{{ mother }}能量有餘，<br>{{ minister }}能量正常。</label>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<h3>本經腧穴</h3>
+<br>
+<table>
+    <tr>
+        <th>腧穴</th>
+    </tr>
+    {% for point in points %}
+    <tr>
+        <td>
+            <a href="{% url 'query' %}?q={{ point.0.0 }}&category=acupoint">{{ point.0.0 }} {{ point.0.1 }}</a>
+        </td>
+        <td>
+
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+# Using Ordered List
+
+<ol>
+    {% for point in points %}
+    <li>
+        <a href="{% url 'query' %}?q={{ point.0 }}&category=acupoint">{{ point.0 }} {{ point.1 }}</a>
+    </li>
+    {% endfor %}
+</ol>
+
+
+# Using Table
+
+<table>
+    <tr>
+        <th>編號</th>
+        <th>名稱</th>
+        <th>五輸穴</th>
+        <th>原穴、絡穴</th>
+        <th>郄穴</th>
+        <th>背俞穴、募穴</th>
+        <th>下合穴</th>
+        <th>八會穴</th>
+        <th>八脈交會穴</th>
+        <th>交會穴</th>
+    </tr>
+    {% for point in points %}
+    <tr>
+        <td>
+            {{ point.0 }}
+        </td>
+        <td>
+            <a href="{% url 'query' %}?q={{ point.0 }}&category=acupoint">{{ point.1 }}</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

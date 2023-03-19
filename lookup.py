@@ -1,0 +1,502 @@
+import sqlite3 as sql
+from pathlib import Path
+import os
+import hanlp
+from hanlp.components.tokenizers.transformer import TransformerTaggingTokenizer
+
+DB_PATH = Path(os.path.abspath(__file__)).parents[0] / "acu.db"
+
+tok: TransformerTaggingTokenizer = hanlp.load(hanlp.pretrained.tok.COARSE_ELECTRA_SMALL_ZH)
+
+
+def get_acupoint(query, with_alias=True, fuzzy=True):
+    """Return ID and traditional Chinese name of acupoint, given a random search string."""
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        no_alias = f"""
+            SELECT ID, acuName_zh, acuName_tr, acuName_en, meridianID FROM `Acupoint`
+            WHERE `ID` = "{query}" COLLATE NOCASE OR `acuName_zh` LIKE "%{query}%" OR `acuName_zh_sim` LIKE "%{query}%" OR 
+            `acuName_tr` LIKE "%{query}%" COLLATE NOCASE OR `acuName_en` LIKE "%{query}%" COLLATE NOCASE;
+            """
+        no_alias_precise = f"""
+            SELECT ID, acuName_zh, acuName_tr, acuName_en, meridianID FROM `Acupoint`
+            WHERE `ID` = "{query}" COLLATE NOCASE OR `acuName_zh` LIKE "{query}" OR `acuName_zh_sim` LIKE "%{query}%" OR 
+            `acuName_tr` LIKE "{query}" COLLATE NOCASE OR `acuName_en` LIKE "{query}" COLLATE NOCASE;
+            """
+
+        alias = f"""
+            SELECT ID, acuName_zh, acuName_tr, acuName_en, meridianID FROM `Acupoint`
+            WHERE `ID` = "{query}" COLLATE NOCASE OR `acuName_zh` LIKE "%{query}%" OR `acuName_zh_sim` LIKE "%{query}%" OR 
+            `acuName_tr` LIKE "%{query}%" COLLATE NOCASE OR `acuName_en` LIKE "%{query}%" COLLATE NOCASE
+            UNION
+            SELECT ID, acuName_zh, acuName_tr, acuName_en, meridianID FROM `acuAlias`
+            JOIN `Acupoint` ON `acuID` = `ID`
+            WHERE `acuAlias`.`aliasName` LIKE "%{query}%"
+            """
+
+        alias_precise = f"""
+            SELECT ID, acuName_zh, acuName_tr, acuName_en, meridianID FROM `Acupoint`
+            WHERE `ID` = "{query}" COLLATE NOCASE OR `acuName_zh` LIKE "{query}" OR `acuName_zh_sim` LIKE "{query}" OR 
+            `acuName_tr` LIKE "{query}" COLLATE NOCASE OR `acuName_en` LIKE "{query}" COLLATE NOCASE
+            UNION
+            SELECT ID, acuName_zh, acuName_tr, acuName_en, meridianID FROM `acuAlias`
+            JOIN `Acupoint` ON `acuID` = `ID`
+            WHERE `acuAlias`.`aliasName` LIKE "{query}"
+            """
+
+        if not with_alias:
+            if fuzzy:
+                c.execute(no_alias)
+            else:
+                c.execute(no_alias_precise)
+        else:
+            if fuzzy:
+                c.execute(alias)
+            else:
+                c.execute(alias_precise)
+
+        return c.fetchall()
+
+
+def get_meridian(query):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f"""
+        SELECT ID, meridianName_zh, meridianName_tr, meridianName_en, meridianName_abbrev, meridianExtra FROM `Meridian`
+        WHERE `ID` = "{query}" COLLATE NOCASE OR `meridianName_zh` LIKE '%{query}%' OR 
+        `meridianName_zh_sim` LIKE '%{query}%' OR `meridianName_tr` LIKE '% {query} %' COLLATE NOCASE OR
+        `meridianName_en` LIKE '% {query} %' COLLATE NOCASE""")
+
+        return c.fetchall()
+
+
+def get_id(query, with_alias=True, fuzzy=True):
+    rslt = get_acupoint(query, with_alias, fuzzy)
+    if len(rslt) > 1:
+        print(f"""Keyword "{query}" is not sufficient to pinpoint a single ID. 
+        Please refine your search term.
+        Result:\n""")
+
+        print(*rslt, sep='\n')
+
+    elif len(rslt) == 0:
+        print(f"""No acupoint with the name "{query}" has been found. 
+        Please try again.""")
+
+    else:
+        print(f"Your keyword '{query}' corresponds to the acupoint {rslt[0][1]} of ID {rslt[0][0]}.")
+
+        return rslt[0][0]
+
+
+def get_route(query):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f"""
+        SELECT route, route_src FROM `meridianRoute`
+        WHERE `meridianID` = "{query}"
+        """)
+
+        return c.fetchone()
+
+
+def get_location(query):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f"""
+        SELECT acuLoc_desc FROM `acuLoc`
+        WHERE `acuID` = "{query}"
+        """)
+
+        return c.fetchone()[0]
+
+
+def acupoints_in_meridian(meridian_id):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f"""
+        SELECT ID FROM `Meridian`
+        WHERE `meridianExtra` = "1"
+        """)
+
+        extra = [item[0] for item in c.fetchall()]
+
+        if meridian_id in extra and meridian_id not in ["CV", "GV"]:
+            c.execute(f"""
+            SELECT bypass, acuName_zh, acuName_en FROM `acuEx`
+            LEFT JOIN `Acupoint` ON `Acupoint`.`ID` = bypass
+            WHERE `acuEx`.`meridianID` = "{meridian_id}";
+            """)
+        else:
+            c.execute(f"""
+            SELECT ID, acuName_zh, acuName_en FROM `Acupoint`
+            WHERE `meridianID` = "{meridian_id}"
+            """)
+
+    return c.fetchall()
+
+
+def href_target(query):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f"""
+        SELECT acuID, aliasName FROM `acuAlias`
+        WHERE `aliasName` LIKE "%{query}%"
+        UNION
+        SELECT ID, acuName_zh FROM `Acupoint`
+        WHERE `acuName_zh` LIKE "%{query}%"
+        """)
+
+        return c.fetchall()
+
+
+def pentashu_table():
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute('''
+        SELECT `pentaShu_base`.`ID`, acuName_zh, attrib, `Meridian`.`ID`, yinyang_tri, cardinal FROM pentaShu_base
+        JOIN Acupoint ON `pentaShu_base`.`ID` = `Acupoint`.`ID`
+        JOIN Meridian ON `Meridian`.`ID` = `Acupoint`.`meridianID`
+        ''')
+
+        return c.fetchall()
+
+
+def update_tokenizer_wordlist():
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute('''
+            SELECT 
+            acuName_zh AS name FROM Acupoint
+            UNION ALL
+            SELECT 
+            acuName_zh_sim AS name FROM Acupoint
+            UNION ALL
+            SELECT
+            aliasName AS name FROM `acuAlias`
+            UNION ALL
+            SELECT
+            meridianName_abbrev AS name FROM `Meridian`
+            WHERE meridianExtra = 0
+        ''')
+
+        word_list = c.fetchall()
+        # word_list = {item[0] for item in word_list}
+
+        word_list = {item[0]:[item[0]] for item in word_list}
+        word_list['臍中央'] = ['臍', '中央']
+        # word_list = [item[0] for item in word_list]
+        # dict = {
+        #     '臍中央': ['臍', '中央'],
+        # }
+        # word_list.append(dict)
+        # word_list = set(word_list)
+
+        tok.dict_force = word_list
+
+        return tok
+
+def cardinal_table():
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute('''
+        SELECT `Acupoint`.`ID`, `acuName_zh`, attrib, elem FROM pentaShu_base
+        JOIN `Acupoint` ON `Acupoint`.`ID` = pentaShu_base.ID
+        WHERE cardinal = 1;
+        ''')
+
+        return c.fetchall()
+
+
+def is_cardinal(acupoint):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f'''
+        SELECT cardinal FROM pentaShu_base
+        WHERE ID = "{acupoint}";
+        ''')
+
+        cardinal = c.fetchone()
+
+        if cardinal and cardinal[0] == 1:
+                return True
+
+def is_pentashu(acupoint):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f'''
+        SELECT attrib, elem FROM pentaShu_base
+        WHERE ID = "{acupoint}";
+        ''')
+
+        pentashu = c.fetchone()
+
+        if pentashu:
+            return pentashu
+
+def get_pentashu_label(acupoint):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f"""
+        SELECT label FROM pentaShu
+        WHERE ID = "{acupoint}";
+        """)
+
+        pentashu = c.fetchone()
+
+        if pentashu:
+            return pentashu[0]
+
+
+def get_mu_shu_label(acupoint):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f"""
+        SELECT som_emo, jb_func, org_vis, mu_shu FROM Mu_Shu
+        WHERE acuID = "{acupoint}";
+        """)
+
+        mu_shu = c.fetchall()
+        if mu_shu:
+            return mu_shu
+
+
+def qixue_yinyang(renying, pulse):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT diagnose, treat_qty, treat_qual FROM diagnose_general
+        WHERE stronger = "{renying}" AND pulse = "{pulse}"
+        ''')
+
+        diagnose = c.fetchall()[0]
+        diagnose = [eval(item) if "[" in item else item for item in diagnose]
+
+        return diagnose
+
+
+def meridian_yinyang(status):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT prescription FROM treat_meridian_qty
+        WHERE rel_qty = "{status}"
+        ''')
+
+        diagnose = c.fetchall()[0]
+        diagnose = [eval(item) if "[" in item else item for item in diagnose]
+
+        return diagnose[0]
+
+
+def parse_action(action, lang):
+    """Takes in an action symbol and returns the name of that symbol in the stated language."""
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT {lang} FROM treatment_action
+        WHERE id = "{action}"
+        ''')
+
+        action = c.fetchone()[0]
+
+        return action
+
+
+def parse_acupoint(acupoint, lang="zh"):
+    """Takes in the acupoint ID and returns name of the acupoint in the stated language."""
+
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT acuName_{lang} FROM Acupoint
+        WHERE id = "{acupoint}"
+        ''')
+
+        action = c.fetchone()[0]
+
+        return action
+
+
+def parse_prescription(prescription, lang="zh"):
+    """
+    A valid prescription would be a single tuple in the form of (acupoint_id, action)
+    where 'action' is given by the symbols '++' or '--'.
+    This function would take in a list of such prescriptions
+    and return the human-friendly value in the specified language.
+    :param prescription:
+    :param lang:
+    :return:
+    """
+    parsed = []
+    if len(prescription) > 1:
+        for item in prescription:
+            point_id, action = item
+            point = parse_acupoint(point_id)
+            action = parse_action(action, lang)
+            parsed.append((point_id, point, action))
+
+    else:
+        point_id, action = prescription[0]
+        point = parse_acupoint(point_id)
+        action = parse_action(action, lang)
+        parsed.append((point_id, point, action))
+
+    return iter(parsed)
+
+
+def phenom_preventive(pathogen, method="mother_son"):
+    """預防六淫，在六經根穴位上應用補母瀉子法。主要作用於經脈的能量上，屬表。"""
+
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        # 補以邪氣為屬性的穴位
+        # （經脈屬性幫人預防相關外邪。如太陽經主寒，補經氣可使人禦寒。）
+        # 用根補穴。
+        c.execute(f'''
+        SELECT root_tonify FROM env_phenomena
+        JOIN env_pathogen ON phenomena = pathogen
+        WHERE phenomena = "{pathogen}";
+        ''')
+
+        tonify = (c.fetchone()[0], "++")
+
+        if method == "mother_son":
+
+            # 補母瀉子法，用根瀉穴。
+            # 瀉除對應經脈的經氣可增強人體對抗邪氣的反面能量。
+            c.execute(f'''
+            SELECT root_disperse FROM env_phenomena
+            JOIN env_pathogen ON phenomena = pathogen
+            WHERE phenomena = (SELECT treatment FROM env_pathogen WHERE pathogen = "{pathogen}");
+            ''')
+
+            disperse = (c.fetchone()[0], "--")
+
+            return tonify, disperse
+
+        elif method == "elem":
+
+            # 五行補瀉法，用對應經脈五輸穴（五行）六氣屬性相反的穴位來抵禦邪氣。
+            # 此根據 Sylvie 上課的說法，與課本有出入。
+            c.execute(f'''
+            SELECT `pentashu`.`ID` FROM pentashu
+            JOIN env_pathogen ON phenom_tri = pathogen
+            WHERE phenom_elem = (SELECT elem_treatment FROM env_pathogen WHERE pathogen = "{pathogen}") AND
+            phenom_tri = (SELECT treatment FROM env_pathogen WHERE pathogen = "{pathogen}") AND 
+            meridian_limb = "F";
+            ''')
+
+            disperse = (c.fetchone()[0], "--")
+
+            return tonify, disperse
+
+
+def phenom_treatment(pathogen):
+    """排除外邪，在五輸穴上應用根穴位的五行屬性。主要作用於經脈與臟腑能量的對應關係上，屬裡。"""
+
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        # 補對應經脈屬性與病邪相反的五輸穴
+        c.execute(f'''
+        SELECT `pentashu`.`ID` FROM pentashu
+        JOIN env_pathogen ON phenom_tri = pathogen
+        WHERE phenom_elem = (SELECT elem_treatment FROM env_pathogen WHERE pathogen = "{pathogen}") AND
+        phenom_tri = (SELECT treatment FROM env_pathogen WHERE pathogen = "{pathogen}") AND 
+        meridian_limb = "F";
+        ''')
+
+        tonify = (c.fetchone()[0], "++")
+
+        # 瀉邪氣；由經脈屬性與病邪相同的五輸穴來處理
+        c.execute(f'''
+        SELECT `pentashu`.`ID` FROM pentashu
+        JOIN env_pathogen ON phenom_tri = pathogen
+        WHERE phenom_elem = (SELECT elem_treatment FROM env_pathogen WHERE treatment = "{pathogen}") AND
+        phenom_tri = "{pathogen}" AND 
+        meridian_limb = "F";        
+        ''')
+
+        disperse = (c.fetchone()[0], "--")
+
+        # 補回被外邪入侵的經脈的能量；由相關經脈的根補穴來進行
+
+        c.execute(f'''
+        SELECT root_tonify FROM env_phenomena
+        JOIN env_pathogen ON phenomena = pathogen
+        WHERE phenomena = "{pathogen}"; 
+        ''')
+
+        fortify = (c.fetchone()[0], "++")
+
+        return tonify, disperse, fortify
+
+
+def get_root_knot(tri):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT yinyang_tri, yinyang_tri_tr, root_knot FROM env_phenomena
+        WHERE id = "{tri}";
+        ''')
+
+        zh, tr, knot = c.fetchone()
+
+        return zh, tr, (knot, "--")
+
+
+def get_pathogen(tri):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT pathogen FROM env_pathogen
+        WHERE ID = "{tri}"
+        ''')
+
+        return c.fetchone()[0]
+
+
+def get_horary(hour):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT start, name from hour_conv
+        WHERE start = {hour} OR end = {hour};
+        ''')
+
+        idx, name = c.fetchone()
+
+        c.execute(f'''
+                SELECT horary.ID, meridianName_abbrev from horary
+                JOIN Meridian ON Meridian.ID = horary.ID
+                WHERE time = {idx};
+        ''')
+
+        meridian_id, meridian = c.fetchone()
+
+        return name, meridian_id, meridian
+
+
+if __name__ == '__main__':
+
+    # print(acupoints_in_meridian("CV"))
+    # print(get_id("崑崙"))
+    # print(href_target("幽門"))
+    # print(get_acupoint("瞳子", fuzzy=False))
+    # print(get_acupoint("瞳子"))
+    # print(is_pentashu("LR1"))
+    # print(update_tokenizer_wordlist())
+    # diagnose, treat_qty, treat_qual = qixue_yinyang("L", "I")
+    # print(get_pathogen("sy"))
+    # print(phenom_preventive("寒", method="elem"))
+    print(get_horary(16))

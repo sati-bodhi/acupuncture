@@ -1,10 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'data_assist/diagnose.html' %}
+
+{% block diagnostic_title %}
+子午流注
+{% endblock %}
+
+{% block diagnostic_form %}
+<form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'horary' %}" id="horaryForm">
+    {% csrf_token %}
+    {% include 'data_assist/include/horary_info.html' %}
+    {% include 'data_assist/include/jetlag_form.html' %}
+
+    <div class="col py-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+
+<script>
+async function showData(){
+var departCity = document.getElementById("cityId").value;
+const url = document.getElementById("horaryForm").action;
+
+if ( departCity == "" ){
+  document.getElementById("depart-info").innerHTML = '';
+  return;
+}else{
+
+let response = await fetch(url + "?city=" + departCity, {
+headers: {
+'x-requested-with' : 'XMLHttpRequest'
+},
+});
+
+if (response.status === 200) {
+    var data = await response.text();
+    document.getElementById("depart-info").innerHTML = data;
+    }
+}
+console.log(url + "?city=" + departCity)
+}
+
+</script>
+{% endblock %}
+
+
+{% block diagnostic_result %}
+
+    {% if luo %}
+    <h2 class="py-3 text-success">子午線，調絡脈</h2>
+    <h3 class="text-secondary py-3">{{ luo_desc.1 }}經 → {{ luo_desc.0 }}經</h3>
+
+    <ul>
+    {% for point in luo %}
+    <li>{{ point | safe }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if transfer %}
+    <h2 class="py-3 text-success">循經，調出入穴</h2>
+
+    <ul>
+    {% for set in transfer %}
+    <h3 class="text-secondary py-3">{{ set.0.1 }} → {{ set.0.0 }}</h3>
+        {% for point in set.1 %}
+            <li>{{ point | safe }}</li>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+
+    {% endif %}
+
+{% endblock %}

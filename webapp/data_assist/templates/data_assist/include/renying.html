@@ -1,10 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% load static %}
+
+<fieldset class="border p-4 m-3">
+    <div class="form-group row justify-content-center">
+      <legend class="form-label py-4"><h1>人迎脈象</h1>
+      <small class="text-secondary">左氣右血</small></legend>
+        <div class="form-check col-sm-4 py-sm-2">
+          <input class="form-check-input" type="radio" name="renying" id="R" value="R">
+          <label class="form-check-label" for="R">
+            血大於氣
+          </label>
+        </div>
+        <div class="form-check col-sm-4 py-sm-2">
+          <input class="form-check-input" type="radio" name="renying" id="L" value="L">
+          <label class="form-check-label" for="L">
+            氣大於血
+          </label>
+      </div>
+    </div>
+</fieldset>

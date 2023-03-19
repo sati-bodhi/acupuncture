@@ -1,0 +1,28 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+調時差
+{% endblock %}
+
+{% block fieldset_content %}
+<div class="container">
+<div class="row justify-content-center">
+    <div class="form-group col">
+        <h2 class="text-secondary py-3">出發地</h2>
+        <label for="cityId">城市：</label>
+        <select name="city" class="form-select form-select-lg py-1" id="cityId" onchange="showData()" autocomplete="off">
+
+            <option value="" selected="selected"></option>
+            {% for city, zh_city in cities_zh %}
+            <option value="{{ city }}">{{ city }}（{{ zh_city }}）</option>
+            {% endfor %}
+
+        </select>
+        <div class="col py-3" id="depart-info">
+
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% if not_found %}
+  <p>查無此經絡或穴位：「{{ keyword }}」。</p>
+  <p>Search term <q>{{ keyword }}</q> is not found. </p>
+{% endif %}

@@ -1,10 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% load static %}
+
+<h3 class="py-3">本經腧穴</h3>
+
+<table class="table table-hover fs-5">
+    <thead>
+        <tr>
+            <th class="text-start">腧穴</th>
+            {% if pentashu %}
+                <th class="text-start">五輸穴</th>
+            {% endif %}
+            {% if mu_shu %}
+                <th class="text-start">募俞穴</th>
+            {% endif %}
+        </tr>
+    </thead>
+    {% for point in table_data %}
+    <tr class="text-start">
+        <td class="px-2">
+            <a href="{% url 'query' %}?q={{ point.0.0 }}&category=acupoint">{{ point.0.0 }} {{ point.0.1 }}</a>
+        </td>
+        {% if pentashu %}
+            <td class="px-2">
+                {% if point.1 %}
+                    <em>{{ point.1 }}</em>
+                {% endif %}
+            </td>
+        {% endif %}
+        {% if mu_shu %}
+            <td class="px-2">
+                {% if point.2 %}
+                    {% for label in point.2 %}
+                <em class="{{ label.0 }} d-sm-inline-block d-lg-inline">
+                    {{ label.0 }}<span class="d-none d-md-inline">性</span>；
+                </em>
+                <em class="{{ label.1 }} d-sm-inline-block d-lg-inline">
+                    <span class="d-none d-md-inline">臟腑—</span>{{ label.1 }}；
+                </em><br>
+                <em class="{{ label.3 }} d-sm-inline-block d-lg-inline">
+                    {{ label.2 }}{{ label.3 }}
+                </em><br>
+                    {% endfor %}
+                {% endif %}
+            </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>

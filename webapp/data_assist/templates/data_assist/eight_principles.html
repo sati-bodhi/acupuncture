@@ -1,8 +1,77 @@
-{% extends 'data_assist/diagnose_form.html' %}
+{% extends 'data_assist/diagnose.html' %}
 
 {% block diagnostic_title %}
 八綱辨證：氣血陰陽
 {% endblock %}
 
 {% block diagnostic_form %}
+
+<form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'eight_principles' %}">
+    {% csrf_token %}
+    {% include 'data_assist/include/renying.html' %}
+    {% include 'data_assist/include/pulse.html' %}
+
+    <div class="col py-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+
 {% endblock %}
+
+
+{% block diagnostic_result %}
+
+        <h2 class="text-secondary py-3">診斷</h2>
+        <div class="row">
+            <ul>
+            <li>{{ diagnosis }}</li>
+            </ul>
+        </div>
+        <h2 class="text-secondary py-3">量的調理</h2>
+        <div class="row">
+            <ul>
+
+                {% for point in treat_qty %}
+                <li>{{ point | safe }}</li>
+                {% endfor %}
+
+            </ul>
+        </div>
+        <h2 class="text-secondary py-3">質的調理</h2>
+        <div class="row">
+            <ul>
+
+            {% for point in treat_qual %}
+            <li>{{ point | safe }}</li>
+            {% endfor %}
+
+            </ul>
+        </div>
+
+        {% if rel_yinyang %}
+        <h2 class="text-secondary py-3">陰陽經脈相對能量</h2>
+        <div class="row">
+            <ul>
+
+            {% for point in treat_meridian %}
+            <li>{{ point | safe }}</li>
+            {% endfor %}
+
+            </ul>
+        </div>
+        {% endif %}
+
+{% endblock %}
+
+
+<div class="form-group row">
+    <div class="col-sm-10">
+      <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
+      <input type="email" name="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+</div>
+<div class="form-group row">
+<label for="inputPassword3" class="col-sm-2 col-form-label">Password</label>
+<div class="col-sm-10">
+  <input type="password" class="form-control" id="inputPassword3" placeholder="Password">
+</div>

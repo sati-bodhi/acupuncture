@@ -1,0 +1,31 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+出發地資訊
+{% endblock %}
+
+{% block fieldset_content %}
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">時間</h2>
+    {{ depart_time }}
+</div>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">時區</h2>
+    {{ depart_timezone }}
+</div>
+<hr>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">太陽時間</h2>
+    {{ depart_solar_time }}
+</div>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">時辰</h2>
+    {{ depart_hour }}時
+</div>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">循經</h2>
+    {{ depart_meridian }}
+</div>
+
+{% endblock %}

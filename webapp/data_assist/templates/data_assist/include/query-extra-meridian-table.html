@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<h3>交會腧穴</h3>
+
+<ol class="fs-5">
+    {% for point in table_data %}
+    <li>
+        <a href="{% url 'query' %}?q={{ point.0.0 }}&category=acupoint">{{ point.0.0 }} {{ point.0.1 }}</a>
+    </li>
+    {% endfor %}
+</ol>

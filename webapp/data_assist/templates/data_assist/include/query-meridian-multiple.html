@@ -1,10 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'data_assist/include/query-multiple.html' %}
+
+{% block multiple-heading %}
+<h3>命中經絡</h3>
+{% endblock %}
+
+{% block multiple-for-loop %}
+
+<p>請選一：</p>
+<ol>
+{% for vessel in meridian %}
+<li><a href="{% url 'query' %}?q={{ vessel.0 }}&category=meridian">{{ vessel.0 }}   {{ vessel.1 }}</a></li>
+{% endfor %}
+</ol>
+
+{% endblock %}

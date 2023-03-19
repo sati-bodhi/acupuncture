@@ -1,10 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'data_assist/simple_output_base.html' %}
+
+<div class="col-1">
+    <ul class="nav flex-column">
+
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'eight_principles' %}">氣血陰陽</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'channels' %}" class="nav-link">六經與六氣</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'channels' %}" class="nav-link">子午流注</a>
+      </li>
+
+    </ul>
+</div>

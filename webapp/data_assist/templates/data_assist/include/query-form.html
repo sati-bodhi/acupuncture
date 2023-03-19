@@ -1,10 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<h1>穴位經絡查詢</h1>
+
+<form class = "col py-3" method="GET"  action="{% url 'query' %}">
+    {% csrf_token %}
+    <span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;">
+        <input name="q" type="search" class="form-control ds-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" style="position: relative; vertical-align: top;" dir="auto">
+        <br>
+        <input type="radio" id="acupoint" name="category" value="acupoint" checked="checked">
+        <label for="acupoint">找穴位</label><br>
+        <input type="radio" id="meridian" name="category" value="meridian">
+        <label for="meridian">找經絡</label>
+        <br>
+    </span>
+</form>

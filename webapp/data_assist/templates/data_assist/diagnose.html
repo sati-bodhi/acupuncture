@@ -1,2 +1,38 @@
-{% extends 'main/output_base.html' %}
+{% extends 'data_assist/simple_output_base.html' %}
 
+{% block content %}
+<div class="row justify-content-center">
+
+    <h1 class="display-4 py-3">
+        {% block diagnostic_title %}
+        {% endblock %}
+    </h1>
+    <div class="col-sm-6 py-sm-4">
+
+        {% if result %}
+
+            <fieldset class="border p-4 m-3">
+                <div class="container col fs-4 py-3">
+                <h1 class="py-3">治療</h1>
+
+                    {% block diagnostic_result %}
+                    {% endblock %}
+
+                </div>
+            </fieldset>
+
+            <div class="col py-3">
+                <button class="btn btn-primary" type="button" onclick="history.back()">Back</button>
+            </div>
+
+        {% else %}
+
+            {% block diagnostic_form %}
+            {% endblock %}
+
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

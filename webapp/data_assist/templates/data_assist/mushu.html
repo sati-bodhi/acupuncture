@@ -1,0 +1,27 @@
+{% extends 'data_assist/diagnose.html' %}
+
+{% block diagnostic_title %}
+五行募俞穴
+{% endblock %}
+
+{% block diagnostic_form %}
+
+<form class="p-3 m-3 fs-4"  method="POST"  action="{% url 'elem-chronic' %}">
+    {% csrf_token %}
+    {% include 'data_assist/include/mushu_form_basic.html' %}
+
+    <div class="col py-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+
+    <hr>
+
+    {% if category_elected %}
+    <h1>{{ som_emo }}性臟腑－{{ jb_func }}</h1>
+    {% endif %}
+
+</form>
+{% endblock %}
+
+{% block diagnostic_result %}
+{% endblock %}

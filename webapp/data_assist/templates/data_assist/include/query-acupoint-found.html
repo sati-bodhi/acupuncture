@@ -1,10 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'data_assist/include/query-found.html' %}
+{% load static %}
+
+{% block found-heading %}
+<h2 class="display-4 py-5">{{id}} {{zh_name}}</h2>
+{% endblock %}
+
+{% block found-data %}
+<dl class="row">
+    <dt class="col-sm-3">位置：</dt>
+    <dd class="col-sm-9">{{ located | safe }}</dd> <!--Use 'safe' tag to render template variable as html. -->
+    <dt class="col-sm-3">經絡：</dt>
+    <dd class="col-sm-9"><a href="{% url 'query' %}?q={{ meridian_id }}&category=meridian">{{ meridian }}</a></dd>
+    {% if pentashu %}
+        <dt class="col-sm-3">五輸穴：</dt>
+        <dd class="col-sm-9">{{ pentashu }}</dd>
+    {% endif %}
+    {% if mushu %}
+        <dt class="col-sm-3">募俞穴：</dt>
+        <dd class="col-sm-9">
+            {% for label in mushu %}
+                <p class="{{ label.0 }}">{{ label.0 }}性；</p>
+                <p class="{{ label.1 }}">臟腑—{{ label.1 }}；</p>
+                <p class="{{ label.3 }}">{{ label.2 }}{{ label.3 }}</p>
+            {% endfor %}
+        </dd>
+    {% endif %}
+</dl>
+{% endblock %}
+
+{% block found-image %}
+<img class="img-fluid mx-auto d-block" src="{{baseURL}}/{{id}}.png" alt="Acupoint image not displayed due to copyright considerations.">
+{% endblock %}

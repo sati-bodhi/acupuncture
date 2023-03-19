@@ -1,0 +1,41 @@
+{% extends 'data_assist/diagnose.html' %}
+
+{% block diagnostic_title %}
+五行四針法
+{% endblock %}
+
+{% block diagnostic_form %}
+
+<form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'elements' %}" id="elementForm">
+    {% csrf_token %}
+    {% include 'data_assist/include/season_info.html' %}
+    {% include 'data_assist/include/organ_energy.html' %}
+    {% include 'data_assist/include/acute_diagnose_form.html' %}
+
+    <div class="col py-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block diagnostic_result %}
+
+<h2 class="text-secondary py-3">原則</h2>
+<div class="container-fluid justify-content py-3">
+    <p class="text-start">以當季的「君」為本位，利用五輸穴來改變其能量的（五行）性質，
+        與其母、子、臣及所剋之敵的能量相聯繫，使生剋關係平衡。</p>
+    <p class="text-start">虛則補其母，實則瀉其子。</p>
+    <!--（原則上不碰「君」的本穴？）-->
+</div>
+
+<h2 class="text-secondary py-3">處方</h2>
+<div class="container py-3">
+    <ol>
+    {% for point, attrib in prescription %}
+    <li>{{ point | safe }}</li>（{{ attrib }}）
+    {% endfor %}
+    </ol>
+</div>
+
+{% endblock %}

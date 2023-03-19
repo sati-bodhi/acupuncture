@@ -14,8 +14,8 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_DIR = str(Path(BASE_DIR).parents[0])
+BASE_DIR = str(Path(os.path.abspath(__file__)).parents[1])
+DB_DIR = str(Path(os.path.abspath(__file__)).parents[2])
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,7 +27,13 @@ SECRET_KEY = '$lw5e0z^u!-+!(#io&m8cb(0dzjla6(*h8eb@lcz@4u&(zo_k@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '192.168.10.149',
+    'localhost',
+    '127.0.0.1',
+    '218.212.40.70',
+    'acupuncture.loca.lt',
+]
 
 
 # Application definition
@@ -39,9 +45,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'data_assist.apps.MainConfig',
-    'webapp',
+    'django.contrib.gis',
+    'django_extensions',
+    'django_user_agents',
+    'data_assist',
+    'geoip2',
 ]
+
+# Cache backend is optional, but recommended to speed up user agent parsing
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
+# Name of cache backend to cache user agents. If it not specified default
+# cache alias will be used. Set to `None` to disable caching.
+USER_AGENTS_CACHE = 'default'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -51,7 +73,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
+
+MIDDLEWARE_CLASSES = [
+    'django_user_agents.middleware.UserAgentMiddleware',
+]
+
 
 ROOT_URLCONF = 'webapp.urls'
 
@@ -64,6 +92,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -108,6 +137,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Geoip
+
+GEOIP_PATH = os.path.join(DB_DIR,  'geoip')
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -122,12 +155,28 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Multilingual Support Settings
+
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale/'),
+)
+
+ugettext = lambda s: s
+LANGUAGES = (
+    ('en', ugettext('English')),
+    ('fr', ugettext('French')),
+    ('zh', ugettext('Traditional Chinese')),
+)
+
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
 
-DATABASE_ROUTERS = [
-    'routers.db_router.AcuRouter'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'data_assist/static')
 ]
+
+# STATIC_ROOT = os.path.join(BASE_DIR, 'data_assist/static')

@@ -1,115 +1,117 @@
-#########
-# AcuDB #
-#########
-
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
-from django.db import models
-
-
-class Acupoint(models.Model):
-    id = models.TextField(db_column='ID', primary_key=True, blank=True, null=True)  # Field name made lowercase.
-    prcid = models.TextField(db_column='prcID', unique=True, blank=True, null=True)  # Field name made lowercase.
-    acuname_zh = models.TextField(db_column='acuName_zh', blank=True, null=True)  # Field name made lowercase.
-    acuname_zh_sim = models.TextField(db_column='acuName_zh_sim', blank=True, null=True)  # Field name made lowercase.
-    acuname_en = models.TextField(db_column='acuName_en', blank=True, null=True)  # Field name made lowercase.
-    acuname_tr = models.TextField(db_column='acuName_tr', blank=True, null=True)  # Field name made lowercase.
-    meridianid = models.TextField(db_column='meridianID', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'Acupoint'
-
-
-class Images(models.Model):
-    id = models.TextField(db_column='ID', blank=True, null=True)  # Field name made lowercase.
-    category = models.TextField(blank=True, null=True)
-    source = models.TextField(blank=True, null=True)
-    img = models.BinaryField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'Images'
-# Unable to inspect table 'Meridian'
-# The error was: list index out of range
-
-
-class Acualias(models.Model):
-    acuid = models.TextField(db_column='acuID', blank=True, null=True)  # Field name made lowercase.
-    aliasname = models.TextField(db_column='aliasName', blank=True, null=True)  # Field name made lowercase.
-    aliassrc = models.TextField(db_column='aliasSrc', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'acuAlias'
-
-
-class Acuex(models.Model):
-    id = models.TextField(db_column='ID', blank=True, null=True)  # Field name made lowercase.
-    bypass = models.ForeignKey(Acupoint, models.DO_NOTHING, db_column='bypass', blank=True, null=True)
-    meridianid = models.ForeignKey('Meridian', models.DO_NOTHING, db_column='meridianID', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'acuEx'
-
-
-class Acufind(models.Model):
-    acuid = models.TextField(db_column='acuID', blank=True, null=True)  # Field name made lowercase.
-    acufind_desc = models.TextField(db_column='acuFind_desc', blank=True, null=True)  # Field name made lowercase.
-    ref = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'acuFind'
-
-
-class Aculoc(models.Model):
-    acuid = models.TextField(db_column='acuID', blank=True, null=True)  # Field name made lowercase.
-    aculoc_desc = models.TextField(db_column='acuLoc_desc', blank=True, null=True)  # Field name made lowercase.
-    aculoc_pos = models.TextField(db_column='acuLoc_pos', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'acuLoc'
-
-
-class Imglink(models.Model):
-    id = models.AutoField(db_column='ID', blank=True, null=True)  # Field name made lowercase.
-    imgid = models.TextField(db_column='imgID', blank=True, null=True)  # Field name made lowercase.
-    refid = models.TextField(db_column='refID', blank=True, null=True)  # Field name made lowercase.
-    imgcat = models.ForeignKey(Images, models.DO_NOTHING, db_column='imgCAT', blank=True, null=True)  # Field name made lowercase.
-    imgsrc = models.TextField(db_column='imgSRC', blank=True, null=True)  # Field name made lowercase.
-    img_desc = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'imgLink'
-
-
-class Meridianorder(models.Model):
-    id = models.AutoField(db_column='ID', blank=True, null=True)  # Field name made lowercase.
-    meridianid = models.ForeignKey('Meridian', models.DO_NOTHING, db_column='meridianID', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'meridianOrder'
-
-
-class Meridianroute(models.Model):
-    meridianid = models.TextField(db_column='meridianID', blank=True, null=True)  # Field name made lowercase.
-    route = models.TextField(blank=True, null=True)
-    route_src = models.TextField(blank=True, null=True)
-    route_classic = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'meridianRoute'
+# #########
+# # AcuDB #
+# #########
+#
+# # This is an auto-generated Django model module.
+# # You'll have to do the following manually to clean this up:
+# #   * Rearrange models' order
+# #   * Make sure each model has one field with primary_key=True
+# #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
+# #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+# # Feel free to rename the models, but don't rename db_table values or field names.
+# from django.db import models
+#
+#
+# class Acupoint(models.Model):
+#     id = models.TextField(db_column='ID', primary_key=True, blank=True, null=False)  # Field name made lowercase.
+#     prc_id = models.TextField(db_column='prcID', unique=True, blank=True, null=True)  # Field name made lowercase.
+#     acuname_zh = models.TextField(db_column='acuName_zh', blank=True, null=True)  # Field name made lowercase.
+#     acuname_zh_sim = models.TextField(db_column='acuName_zh_sim', blank=True, null=True)  # Field name made lowercase.
+#     acuname_en = models.TextField(db_column='acuName_en', blank=True, null=True)  # Field name made lowercase.
+#     acuname_tr = models.TextField(db_column='acuName_tr', blank=True, null=True)  # Field name made lowercase.
+#     meridian_id = models.TextField(db_column='meridianID', blank=True, null=True)  # Field name made lowercase.
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'Acupoint'
+#
+#
+# class Images(models.Model):
+#     id = models.TextField(primary_key=True, blank=False, null=False)  # Field name made lowercase.
+#     category = models.TextField(blank=False, null=True)
+#     source = models.TextField(blank=False, null=True)
+#     img = models.BinaryField(blank=True, null=True)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'Images'
+#
+#
+# class Meridian(models.Model):
+#     id = models.TextField(db_column='ID', primary_key=True, blank=True)  # Field name made lowercase.
+#     meridian_name_zh = models.TextField(db_column='meridianName_zh', blank=True, null=True)  # Field name made lowercase.
+#     meridian_name_zh_sim = models.TextField(db_column='meridianName_zh_sim', blank=True, null=True)  # Field name made lowercase.
+#     meridian_name_tr = models.TextField(db_column='meridianName_tr', blank=True, null=True)  # Field name made lowercase.
+#     meridian_name_en = models.TextField(db_column='meridianName_en', blank=True, null=True)  # Field name made lowercase.
+#     meridian_extra = models.BooleanField(db_column='meridianExtra')  # Field name made lowercase.
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'Meridian'
+#
+#
+# class AcuAlias(models.Model):
+#     acu_id = models.TextField(db_column='acuID', blank=True, null=True)  # Field name made lowercase.
+#     alias_name = models.TextField(db_column='aliasName', blank=True, null=True)  # Field name made lowercase.
+#     alias_src = models.TextField(db_column='aliasSrc', blank=True, null=True)  # Field name made lowercase.
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'acuAlias'
+#
+#
+# class AcuEx(models.Model):
+#     id = models.TextField(primary_key=True, db_column='ID', blank=True, null=False)  # Field name made lowercase.
+#     bypass = models.ForeignKey(Acupoint, models.DO_NOTHING, db_column='bypass', blank=True, null=True)
+#     meridian_id = models.ForeignKey(Meridian, models.DO_NOTHING, db_column='meridianID', blank=True, null=True)  # Field name made lowercase.
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'acuEx'
+#
+#
+# class AcuFind(models.Model):
+#     acu_id = models.TextField(db_column='acuID', blank=True, null=True)  # Field name made lowercase.
+#     acufind_desc = models.TextField(db_column='acuFind_desc', blank=True, null=True)  # Field name made lowercase.
+#     ref = models.TextField(blank=True, null=True)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'acuFind'
+#
+#
+# class AcuLoc(models.Model):
+#     acu_id = models.TextField(db_column='acuID', blank=True, null=True)  # Field name made lowercase.
+#     aculoc_desc = models.TextField(db_column='acuLoc_desc', blank=True, null=True)  # Field name made lowercase.
+#     aculoc_pos = models.TextField(db_column='acuLoc_pos', blank=True, null=True)  # Field name made lowercase.
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'acuLoc'
+#
+#
+# class ImgLink(models.Model):
+#     id = models.AutoField(primary_key=True, db_column='ID', blank=True, null=False)  # Field name made lowercase.
+#     img_id = models.TextField(db_column='imgID', blank=True, null=True)  # Field name made lowercase.
+#     ref_id = models.TextField(db_column='refID', blank=True, null=True)  # Field name made lowercase.
+#     img_cat = models.ForeignKey(Images, related_name='category', db_column='imgCAT', blank=True, null=True)  # Field name made lowercase.
+#     img_src = models.TextField(db_column='imgSRC', blank=True, null=True)  # Field name made lowercase.
+#     img_desc = models.TextField(blank=True, null=True)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'imgLink'
+#
+#
+# class MeridianRoute(models.Model):
+#     meridian_id = models.TextField(db_column='meridianID', blank=True, null=True)  # Field name made lowercase.
+#     route = models.TextField(blank=True, null=True)
+#     route_src = models.TextField(blank=True, null=True)
+#     route_classic = models.TextField(blank=True, null=True)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'meridianRoute'
 
 ##############
 # DEFAULT DB #
@@ -122,7 +124,7 @@ class Meridianroute(models.Model):
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
-
+from django.db import models
 
 class AuthGroup(models.Model):
     name = models.CharField(unique=True, max_length=150)

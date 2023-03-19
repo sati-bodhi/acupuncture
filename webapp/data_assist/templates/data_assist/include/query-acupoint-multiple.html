@@ -1,10 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'data_assist/include/query-multiple.html' %}
+{% load static %}
+
+{% block multiple-heading %}
+<h3>命中腧穴</h3>
+{% endblock %}
+
+
+{% block multiple-for-loop %}
+
+  <p>請選一：</p>
+    {% for list in acupoint %}
+    <div class="row px-4">
+        {% for point in list %}
+        <div class="col-lg-3 py-2 px-3">
+            <a href="{% url 'query' %}?q={{ point.0 }}&category=acupoint">{{ point.0 }}   {{ point.1 }}</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+{% endblock %}

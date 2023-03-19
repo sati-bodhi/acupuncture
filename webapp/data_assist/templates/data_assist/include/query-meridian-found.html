@@ -1,10 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'data_assist/include/query-found.html' %}
+{% load static %}
+
+
+{% block found-heading %}
+<h2 class="display-3 py-5">{{meridian_id}} {{zh_meridianname}}</h2>
+{% endblock %}
+
+{% block found-data %}
+<h3>循經</h3>
+<p>{{route_src}}:
+<blockquote>
+    {{route | safe}}
+</blockquote>
+</p>
+{% endblock %}
+
+{% block found-image%}
+<img class="img-fluid mx-auto d-block" src="{{baseURL}}/{{meridian_id}}.png" alt="Meridian image not displayed due to copyright considerations.">
+{% endblock %}

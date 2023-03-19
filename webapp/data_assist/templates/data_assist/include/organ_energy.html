@@ -1,0 +1,68 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+臟腑能量
+{% endblock %}
+
+{% block fieldset_content %}
+
+{% if earth_energy %}
+<h2 class="text-primary py-3">調脾土</h2>
+<p>長夏或換季前十八天，能量屬土。</p>
+<p>資訊系統以大暑至處暑為長夏。</p>
+<div class="container row py-3 justify-content-center">
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">君</h2>
+        {{ E_lord }}
+    </div>
+    <h4 class="text-info py-1">以下相生</h4>
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">母</h2>
+        {{ E_mother }}
+    </div>
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">子</h2>
+        {{ E_son }}
+    </div>
+    <h4 class="text-info py-1">以下相剋</h4>
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">臣</h2>
+        {{ E_minister }}
+    </div>
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">所剋之敵</h2>
+        {{ E_inhibited }}
+    </div>
+</div>
+<hr>
+<h2 class="text-primary py-3">調{{ lord }}</h2>
+{% endif %}
+<div class="container row py-3 justify-content-center">
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">君</h2>
+        {{ lord }}
+    </div>
+    <h4 class="text-info py-1">以下相生</h4>
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">母</h2>
+        {{ mother }}
+    </div>
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">子</h2>
+        {{ son }}
+    </div>
+    <h4 class="text-info py-1">以下相剋</h4>
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">臣</h2>
+        {{ minister }}
+    </div>
+    <div class="row justify-content-center py-3">
+        <h2 class="text-secondary py-1">所剋之敵</h2>
+        {{ inhibited }}
+    </div>
+</div>
+<div class="row justify-content-center py-3">
+    <img src="data:image/png;base64,{{ graph|safe }}">
+</div>
+{% endblock %}

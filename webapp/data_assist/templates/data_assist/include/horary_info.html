@@ -1,0 +1,31 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+在地資訊
+{% endblock %}
+
+{% block fieldset_content %}
+<div class="row justify-content-center py-3" onload="updateTime()">
+    <h2 class="text-secondary py-1">時間</h2>
+    {{ local_time }}
+</div>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">時區</h2>
+    {{ local_timezone }}
+</div>
+<hr>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">太陽時間</h2>
+    {{ local_solar_time }}
+</div>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">時辰</h2>
+    {{ local_hour }}時
+</div>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">循經</h2>
+    {{ local_meridian }}
+</div>
+
+{% endblock %}

@@ -1,16 +1,21 @@
+{% extends 'data_assist/simple_output_base.html' %}
 {% load static %}
 
-<div class="container col py-3">
+{% block content %}
+<div class="container col-sm-6 py-3">
     <h1 class="py-3 justify-content-center display-2">診斷與治療</h1>
     <ul class="fs-4 py-2 list-unstyled">
 
+        <fieldset class="border p-4 m-3">
         <div class="row py-2">
             <h2 class="py-3">八綱辨證</h2>
             <li>
                 總體狀態：<a href="{% url 'eight_principles' %}" class="href">氣血陰陽</a>
             </li>
         </div>
+        </fieldset>
 
+        <fieldset class="border p-4 m-3">
         <div class="row py-2">
             <h2 class="py-3">能量使用層</h2>
             <h3 class="pb-2 text-secondary"><em>十二正經</em></h3>
@@ -18,28 +23,31 @@
                 外邪入侵：<a href="{% url 'channels' %}" class="href">六經與六氣</a>
             </li>
             <li>
-                調時差：<a href="{% url 'channels' %}" class="href">子午流注</a>
+                調時差：<a href="{% url 'horary' %}" class="href">子午流注</a>
             </li>
         </div>
 
         <div class="row py-2">
             <h3 class="pb-2 text-secondary"><em>五行</em></h3>
             <li>
-                急性內傷：古典穴位<a href="{% url 'elements' %}" class="href">四針法</a>
+                急性內傷：古典穴位<a href="{% url 'elem-acute' %}" class="href">四針法</a>
             </li>
             <li>
-                亞急性、慢性內傷：<a href="{% url 'elements' %}" class="href">募俞穴</a>
+                亞急性、慢性內傷：<a href="{% url 'elem-chronic' %}" class="href">募俞穴</a>
             </li>
         </div>
+        </fieldset>
 
-
+        <fieldset class="border p-4 m-3">
         <div class="row py-2">
             <h2 class="py-3">能量分配層</h2>
             <li>
                 <a href="{% url 'extraordinary' %}" class="href">奇經八脈</a>
             </li>
         </div>
+        </fieldset>
 
+        <fieldset class="border p-4 m-3">
         <div class="row py-2">
             <h2 class="py-3">輔助能量系統</h2>
             <h3 class="pb-2 text-secondary"><em>十二經筋 <br>
@@ -63,5 +71,7 @@
                 扭傷與疼痛：<a href="{% url 'group_luo' %}" class="href">組絡</a>療法
             </li>
         </div>
+        </fieldset>
     </ul>
 </div>
+{% endblock %}

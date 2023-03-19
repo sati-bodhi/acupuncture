@@ -1,0 +1,23 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+{% load tz %}
+
+{% block fieldset_title %}
+季節資訊
+{% endblock %}
+
+{% block fieldset_content %}
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">日期/時間</h2>
+    {{ season.3|timezone:season.4 }}
+</div>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">節氣</h2>
+    {{ season.1 }}<br>
+    <small>({{ season.2|timezone:season.4 }})</small>
+</div>
+<div class="row justify-content-center py-3">
+    <h2 class="text-secondary py-1">季節</h2>
+    {{ season.5 }}
+</div>
+{% endblock %}
