@@ -26,9 +26,8 @@ class Database:
             else:
                 return
 
-
     @staticmethod
-    def df_to_sql(df):
+    def df_to_sql(df, table):
         with sql.connect(DB_PATH) as conn:
-            df.to_sql("seasons", conn, if_exists='replace', index=False)
+            df.to_sql(table, conn, if_exists='replace', index=False)
 

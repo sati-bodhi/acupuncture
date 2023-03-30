@@ -22,8 +22,8 @@
       </label>
     </div>
     <div class="form-check row py-sm-2">
-        <input type="checkbox" class="form-check-input" id="sp_mother_overload" name="spMotherOverload" value=True>
-        <label class="form-check-label" for="mother_overload">{{ E_mother }}能量有餘，<br>{{ E_minister }}能量正常。</label>
+        <input type="checkbox" class="form-check-input" id="treatSP" name="treatSP" value=True>
+        <label class="form-check-label" for="treatSP">以脾為君，調理脾胃。</label>
     </div>
 </div>
 <hr>
@@ -43,9 +43,60 @@
         實
       </label>
     </div>
-    <div class="form-check row py-sm-2">
-        <input type="checkbox" class="form-check-input" id="mother_overload" name="motherOverload" value=True>
-        <label class="form-check-label" for="mother_overload">{{ mother }}能量有餘，<br>{{ minister }}能量正常。</label>
+</div>
+
+<hr>
+
+<legend class="form-label py-4"><h2>{{ mother }}（母）能量</h2></legend>
+<div class="container row py-3">
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="motherEnergy" id="mother_deficient" value="-">
+      <label class="form-check-label" for="mother_deficient">
+        虛
+      </label>
+    </div>
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="motherEnergy" id="mother_excess" value="+">
+      <label class="form-check-label" for="mother_excess">
+        實
+      </label>
+    </div>
+</div>
+
+<legend class="form-label py-4"><h2>{{ son }}（子）能量</h2></legend>
+<div class="container row py-3">
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="sonEnergy" id="son_deficient" value="-">
+      <label class="form-check-label" for="son_deficient">
+        虛
+      </label>
+    </div>
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="sonEnergy" id="son_excess" value="+">
+      <label class="form-check-label" for="son_excess">
+        實
+      </label>
+    </div>
+</div>
+
+<legend class="form-label py-4"><h2>{{ minister }}（臣）能量</h2></legend>
+<div class="container row py-3">
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="ministerEnergy" id="minister_deficient" value="-">
+      <label class="form-check-label" for="minister_deficient">
+        虛
+      </label>
+    </div>
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="ministerEnergy" id="minister_excess" value="+">
+      <label class="form-check-label" for="minister_excess">
+        實
+      </label>
     </div>
 </div>
 {% endblock %}
+
+<div class="form-check row py-sm-2">
+    <input type="checkbox" class="form-check-input" id="mother_overload" name="motherOverload" value=True>
+    <label class="form-check-label" for="mother_overload">{{ mother }}能量有餘，<br>{{ minister }}能量正常。</label>
+</div>

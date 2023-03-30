@@ -1,0 +1,46 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+臟腑能量
+{% endblock %}
+
+{% block fieldset_content %}
+<h2 class="text-secondary py-2">季節君臟</h2>
+<div class="container row py-3 justify-content-center">
+    {{ season_lord }}
+</div>
+
+<h2 class="text-secondary py-2">調理</h2>
+<div class="form-group col-lg-5 col py-3 justify-content-center">
+    <select name="organ" class="form-select py-1" style="font-size:20px;" id="organ">
+
+        {% for organ_id, zh_name in organs_list %}
+        <option value="{{ organ_id }}"
+            {% if organ_id == season_lord_id %}selected{% endif %}>
+            {{ zh_name }}（{{ organ_id }}）</option>
+        {% endfor %}
+
+    </select>
+</div>
+
+<div class="row py-3">
+    <small>*「經別性」穴位只能夠調理季節臟腑能量。</small>
+</div>
+
+<h2 class="text-secondary py-2">能量</h2>
+<div class="container row py-3 justify-content-center">
+   <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="energy" id="deficient" value="-">
+      <label class="form-check-label" for="deficient">
+        虛
+      </label>
+    </div>
+    <div class="form-check col py-sm-2">
+      <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="energy" id="excess" value="+">
+      <label class="form-check-label" for="excess">
+        實
+      </label>
+    </div>
+</div>
+{% endblock %}

@@ -480,6 +480,28 @@ def update_meridian_route_table(connect: sql.Connection):
                     "《奇經八脈考·{key}》")
             """)
 
+
+def update_meridian_route_desc(connect: sql.Connection):
+    data = get_meridian_route()
+    ex_data = get_ex_route(connect)
+
+    c = connect.cursor()
+
+    for key, value in data.items():
+        c.execute(f"""
+            UPDATE meridianRoute
+            SET route = "{value}"
+            WHERE meridianID = (SELECT ID FROM `Meridian` WHERE `meridianName_abbrev` = "{key}");
+            """)
+
+    for key, value in ex_data.items():
+        c.execute(f"""
+            UPDATE meridianRoute
+            SET route = "{value}"
+            WHERE meridianID = (SELECT ID FROM `Meridian` WHERE `meridianName_zh` = "{key}");
+            """)
+
+
 def get_aliases():
     """Furnish alias names of acupoint from 醫砭 website."""
     base_url = 'http://yibian.hopto.org/acu'
@@ -699,19 +721,19 @@ def update_cl_id(connect: sql.Connection):
         ''')
 
 
-
 if __name__ == '__main__':
     with sql.connect("acu.db") as conn:  # establish connection to database
-        initialize_database(conn)
-        get_basic_data(conn)
-        get_extraordinary_route_data(conn)
-        get_location_data(conn)
-        update_acu_alias_table(conn)
-        update_meridian_route_table(conn)
-        update_meridian_biaoli(conn)
-        update_cl_id(conn)
-
-        conn.commit()
+        # initialize_database(conn)
+        # get_basic_data(conn)
+        # get_extraordinary_route_data(conn)
+        # get_location_data(conn)
+        # update_acu_alias_table(conn)
+        # update_meridian_route_table(conn)
+        update_meridian_route_desc(conn)
+        # update_meridian_biaoli(conn)
+        # update_cl_id(conn)
+        #
+        # conn.commit()
 
         print("Done!")
 

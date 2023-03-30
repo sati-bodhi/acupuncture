@@ -182,20 +182,16 @@ def update_tokenizer_wordlist():
         ''')
 
         word_list = c.fetchall()
-        # word_list = {item[0] for item in word_list}
 
-        word_list = {item[0]:[item[0]] for item in word_list}
+        word_list = {item[0]: [item[0]] for item in word_list}
         word_list['臍中央'] = ['臍', '中央']
-        # word_list = [item[0] for item in word_list]
-        # dict = {
-        #     '臍中央': ['臍', '中央'],
-        # }
-        # word_list.append(dict)
-        # word_list = set(word_list)
+        word_list['陰維'] = ['陰維']
+        word_list['會陰維'] = ['會', '陰維']
 
         tok.dict_force = word_list
 
         return tok
+
 
 def cardinal_table():
     with sql.connect(DB_PATH) as conn:
@@ -222,6 +218,7 @@ def is_cardinal(acupoint):
         if cardinal and cardinal[0] == 1:
                 return True
 
+
 def is_pentashu(acupoint):
     with sql.connect(DB_PATH) as conn:
         c = conn.cursor()
@@ -234,6 +231,7 @@ def is_pentashu(acupoint):
 
         if pentashu:
             return pentashu
+
 
 def get_pentashu_label(acupoint):
     with sql.connect(DB_PATH) as conn:

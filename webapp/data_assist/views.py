@@ -165,12 +165,26 @@ def markup_commentary(string):
 
 def add_href(string, category="acupoint"):
     """Add hyperlink to keywords on database."""
-    wordlist = href_search(string)
+    wordlist, cum_chars = href_search(string)
     # wordlist = set(match[0] for match in href_matches)
 
-    for acu_id, word in wordlist:
-        string = string.replace(word,
-                          '<a href="/query?q=' + acu_id + '&category=' + category + '">' + word + '</a>')
+    segmented_str = []
+    for char in cum_chars:
+        segmented_str.append(string[:char])
+        string = string[char:]
+
+    segmented_str.append(string)
+
+    href_str = []
+    for i, point in enumerate(wordlist):
+        acu_id, word = point
+        href_str.append(segmented_str[i].replace(word,
+                          '<a href="/query?q=' + acu_id + '&category=' + category + '">' + word + '</a>'))
+
+    if len(href_str) < len(segmented_str):
+        href_str.append(segmented_str[-1])
+
+    string = "".join(href_str)
 
     return string
 
@@ -204,14 +218,19 @@ def href_search(string):
                             target = [target[i-1]]
                             narrow_down_on(target)
 
+    chars = 0
+    cumulated_chars = []
     for word in seg_list:
         target = get_acupoint(word, fuzzy=False)
+        chars += len(word)
         if target:
             narrow_down_on(target)
+            cumulated_chars.append(chars)
+            chars = 0
 
-    hits = set(hits)
+    # hits = set(hits)
 
-    return hits
+    return hits, cumulated_chars
 
 
 def render_prescription(prescription):
@@ -475,43 +494,43 @@ def horary(request):
 def elements(request):
     # 五行
     organ_energy = request.GET.get("organEnergy")
-    mother_overload = request.GET.get("motherOverload")
+    mother_energy = request.GET.get("motherEnergy")
+    son_energy = request.GET.get("sonEnergy")
+    minister_energy = request.GET.get("ministerEnergy")
 
     sp_energy = request.GET.get("spEnergy")
-    sp_mother_overload = request.GET.get("spMotherOverload")
+    treat_sp = request.GET.get("treatSP")
 
     s = Season()
     this_season = s.current_season()
     lord_id = s.seasonal_lord(this_season[0])
 
-    earth_energy = s.earth_energy_timeframe(this_season[1])
-
     a = Acute()
-    mother, son, minister, inhibited = ["－".join(a.organ_viscera_zh(i)) for i in a.relative_states(lord_id)]
+
+    if treat_sp:
+        jun = Lord("SP")
+    else:
+        jun = Lord(lord_id)
+
+    mother = "－".join(a.organ_viscera_zh(jun.mother))
+    son = "－".join(a.organ_viscera_zh(jun.son))
+    minister = "－".join(a.organ_viscera_zh(jun.minister))
+    inhibited = "－".join(a.organ_viscera_zh(jun.inhibited))
     lord = "－".join(a.organ_viscera_zh(lord_id))
 
-    earth_mother, earth_son, earth_minister, earth_inhibited = \
-        ["－".join(a.organ_viscera_zh(i)) for i in a.relative_states("SP")]
-    earth_lord = "－".join(a.organ_viscera_zh("SP"))
+    earth_energy = s.earth_energy_timeframe(this_season[1])
 
     G, graph = a.graph()
 
-    if sp_energy == "-" and sp_mother_overload:
-        prescribe = a.diagnose("SP", sp_energy, mother_overload=True)
-    elif sp_energy:
-        prescribe = a.diagnose("SP", sp_energy)
+    if earth_energy:
+        sp = Lord("SP")
+        earth_lord = "－".join(a.organ_viscera_zh("SP"))
+        earth_mother = "－".join(a.organ_viscera_zh(sp.mother))
+        earth_son = "－".join(a.organ_viscera_zh(sp.son))
+        earth_minister = "－".join(a.organ_viscera_zh(sp.minister))
+        earth_inhibited = "－".join(a.organ_viscera_zh(sp.inhibited))
     else:
-        if organ_energy == "-" and mother_overload:
-            prescribe = a.diagnose(lord_id, organ_energy, mother_overload=True)
-        else:
-            prescribe = a.diagnose(lord_id, organ_energy)
-
-    p = Pentashu()
-    attrib = [p.get_attributes(a) for a, t in prescribe]
-
-    treatment = parse_prescription(prescribe)
-    treatment = render_prescription(treatment)
-    treatment = zip(treatment, attrib)
+        earth_lord = earth_mother = earth_son = earth_minister = earth_inhibited = None
 
     if organ_energy is None and sp_energy is None:
         return render(request, template_name='data_assist/elements.html',
@@ -532,6 +551,52 @@ def elements(request):
                           "graph": graph,
                       })
     else:
+        def relative_data(mother_status, son_status, minister_status):
+            excess_energy = []
+            deficient_energy = []
+
+            if mother_status == "-":
+                deficient_energy.append("mother")
+            elif mother_status == "+":
+                excess_energy.append("mother")
+
+            if son_status == "-":
+                deficient_energy.append("son")
+            elif mother_status == "+":
+                excess_energy.append("son")
+
+            if minister_status == "-":
+                deficient_energy.append("minister")
+            elif mother_status == "+":
+                excess_energy.append("minister")
+
+            return excess_energy, deficient_energy
+
+        excess, deficient = relative_data(mother_energy, son_energy, minister_energy)
+
+        p = Pentashu()
+        prescribe = a.diagnose(lord_id, organ_energy, excess=excess, deficient=deficient)
+
+        treatment = []
+        attrib = []
+        for pr in prescribe:
+            logic = pr[0]
+            try:
+                comma = logic.index("，")
+                logic = logic[:comma] + "<br>" + logic[comma:]
+            except ValueError:
+                pass
+
+            formula = pr[1]
+
+            for pt, act in formula:
+                attrib.append(p.get_attributes(pt))
+
+            formula = parse_prescription(formula)
+            formula = render_prescription(formula)
+
+            treatment.append([logic, zip(formula, attrib)])
+
         return render(request, template_name='data_assist/elements.html',
                       context={
                           "season": this_season,
@@ -555,18 +620,61 @@ def elements(request):
 
 def mushu(request):
     # 募俞穴
-    som_emo = request.POST.get("som_emo")
-    jb_func = request.POST.get("jb_func")
 
-    if som_emo and jb_func:
+    lord = request.POST.get("organ")
+    state = request.POST.get("energy")
+
+    s = Season()
+    this_season = s.current_season()
+    season_lord_id = s.seasonal_lord(this_season[0])
+
+    ch = Chronic()
+    ch.som_emo = request.POST.get("som_emo")
+    ch.jb_func = request.POST.get("jb_func")
+
+    organ_labels = [(k, v) for k, v in ch.organ_viscera_zh_map.items()]
+    seasonal_lord = ch.organ_viscera_zh_map[season_lord_id]
+
+    G, graph = ch.graph()
+
+    if ch.som_emo and ch.jb_func:
+
+        diagnosis = ch.organ_viscera_zh_map[lord] + ["實" if state == "+" else "虛"][0]
+        formula, logic = ch.diagnose(lord, state)
+        prescription = [point for point, desc in formula]
+        description = [desc for point, desc in formula]
+        prescription = parse_prescription(prescription)
+        prescription = render_prescription(prescription)
+
+        treatment = zip(prescription, description, logic)
+
         return render(request, template_name='data_assist/mushu.html',
                       context={
-                          "category_elected": True,
-                          "som_emo": som_emo,
-                          "jb_func": jb_func,
+                          "mushu": True,
+                          "result": True,
+                          "som_emo": ch.som_emo,
+                          "jb_func": ch.jb_func,
+                          "heading": ch.som_emo + "性臟腑－" + ch.jb_func,
+                          "season": this_season,
+                          "season_lord_id": season_lord_id,
+                          "season_lord": seasonal_lord,
+                          "lord": lord,
+                          "organs_list": organ_labels,
+                          "graph": graph,
+                          "diagnosis": diagnosis,
+                          "treatment": treatment,
                       })
     else:
-        return render(request, template_name='data_assist/mushu.html')
+
+        return render(request, template_name='data_assist/mushu.html',
+                      context={
+                          "mushu": True,
+                          "season": this_season,
+                          "season_lord_id": season_lord_id,
+                          "season_lord": seasonal_lord,
+                          "organs_list": organ_labels,
+                          "graph": graph,
+                      })
 
 
 def extraordinary(request):

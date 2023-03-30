@@ -1,6 +1,14 @@
-  <div class="row justify-content-center py-3">
-  <div class="border col-5 py-3">
-      <div class="form-check col py-sm-2">
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+疾病類別
+{% endblock %}
+
+{% block fieldset_content %}
+<div class="row justify-content-center py-3">
+  <div class="border col py-3">
+      <div class="form-check col py-sm-2" id="mushuBasic">
           <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="som_emo" id="somatic" value="肉體">
           <label class="form-check-label" for="somatic">
           肉體性
@@ -14,18 +22,20 @@
       </div>
   </div>
 
-      <div class="border col-5 py-3">
+      <div class="border col py-3">
       <div class="form-check col py-sm-2">
           <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="jb_func" id="jingbie" value="經別">
           <label class="form-check-label" for="jingbie">
-          臟腑－經別
+          經別
           </label>
       </div>
       <div class="form-check col py-sm-2">
         <input class="form-check-input" type="radio" style="vertical-align: middle; margin: 0px;" name="jb_func" id="function" value="功能">
         <label class="form-check-label" for="function">
-          臟腑－功能
+          功能
         </label>
       </div>
   </div>
-  </div>
+</div>
+
+{% endblock %}

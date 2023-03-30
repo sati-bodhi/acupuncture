@@ -1,0 +1,18 @@
+{% extends 'data_assist/diagnose.html' %}
+
+{% block diagnostic_title %}
+奇經八脈
+{% endblock %}
+
+{% block diagnostic_form %}
+<form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'extraordinary' %}">
+    {% csrf_token %}
+
+    <div class="col py-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block diagnostic_result %}
+{% endblock %}

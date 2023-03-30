@@ -9,19 +9,31 @@
 <form class="p-3 m-3 fs-4"  method="POST"  action="{% url 'elem-chronic' %}">
     {% csrf_token %}
     {% include 'data_assist/include/mushu_form_basic.html' %}
+    {% include 'data_assist/include/mushu_energy.html' %}
 
-    <div class="col py-3">
+    <div class="row justify-content-center py-3">
+        <img src="data:image/png;base64,{{ graph|safe }}">
+    </div>
+
+    <div class="col py-5">
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>
 
-    <hr>
-
-    {% if category_elected %}
-    <h1>{{ som_emo }}性臟腑－{{ jb_func }}</h1>
-    {% endif %}
-
 </form>
+
 {% endblock %}
 
 {% block diagnostic_result %}
+<h1 class="text-info">{{ heading }}</h1>
+<h2 class="text-danger">{{ diagnosis }}</h2>
+<div class="container">
+    <ol>
+    {% for point, desc, logic in treatment %}
+        <div class="row py-2">
+            <h4 class="text-secondary py-3">{{ logic | safe }}</h4>
+            <li>{{ point | safe }}（{{ desc }}）</li>
+        </div>
+    {% endfor %}
+    </ol>
+</div>
 {% endblock %}

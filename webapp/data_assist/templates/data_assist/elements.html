@@ -25,15 +25,18 @@
 <div class="container-fluid justify-content py-3">
     <p class="text-start">以當季的「君」為本位，利用五輸穴來改變其能量的（五行）性質，
         與其母、子、臣及所剋之敵的能量相聯繫，使生剋關係平衡。</p>
-    <p class="text-start">虛則補其母，實則瀉其子。</p>
-    <!--（原則上不碰「君」的本穴？）-->
 </div>
 
 <h2 class="text-secondary py-3">處方</h2>
-<div class="container py-3">
+<div class="container">
     <ol>
-    {% for point, attrib in prescription %}
-    <li>{{ point | safe }}</li>（{{ attrib }}）
+    {% for logic, formula in prescription %}
+        <div class="row py-2">
+            <h4 class="text-info py-3">{{ logic | safe }}</h4>
+            {% for point, attrib in formula %}
+                <li>{{ point | safe }}（{{ attrib }}）</li>
+            {% endfor %}
+        </div>
     {% endfor %}
     </ol>
 </div>
