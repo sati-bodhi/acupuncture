@@ -1,15 +1,12 @@
 from django.shortcuts import render
 from acupuncture.lookup import *
 from acupuncture.element import *
+from acupuncture.extraordinary import *
 from datetime import datetime
 import pytz
-import geocoder
-import ephem
 from acupuncture.diagnostics import solartime_by_ip, solartime_by_city, horary_calc
-import jieba
 import re
-import hanlp
-from hanlp.components.tokenizers.transformer import TransformerTaggingTokenizer
+
 
 # Tokenizer
 tok = update_tokenizer_wordlist()
@@ -27,7 +24,7 @@ def query(request):
     search_cat = request.GET.get('category')
     acupoint = []
     meridian = []
-    pentashu = None
+    meridian_treatment_label = None
 
     if search_term:
         if search_cat == "acupoint":
@@ -62,6 +59,14 @@ def query(request):
             meridian = get_meridian(meridian_id)
             pentashu = get_pentashu_label(acu_id)
             mu_shu = get_mu_shu_label(acu_id)
+            extra = get_extra_id(acu_id)
+            tonify_meridian = get_meridian_treatment_pt(acu_id, "++")
+            disperse_meridian = get_meridian_treatment_pt(acu_id, "--")
+            if tonify_meridian:
+                meridian_treatment_label = tonify_meridian + "補穴"
+            elif disperse_meridian:
+                meridian_treatment_label = disperse_meridian + "瀉穴"
+            entry_exit = get_entry_exit_pt(acu_id)
             found = True
             loc = get_location(acu_id)  # string describing location of acupoint
             loc = add_href(loc)
@@ -79,6 +84,9 @@ def query(request):
                               "meridian": meridian[0][1],
                               "pentashu": pentashu,
                               "mushu": mu_shu,
+                              "extra": extra,
+                              "treat_meridian": meridian_treatment_label,
+                              "entry_exit": entry_exit,
                           })
 
     elif meridian:
@@ -678,6 +686,8 @@ def mushu(request):
 
 
 def extraordinary(request):
+    ex = Extraordinary()
+
     return render(request, template_name='data_assist/extraordinary.html')
 
 

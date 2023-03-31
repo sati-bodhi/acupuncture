@@ -79,8 +79,7 @@ SCRIPT = '''
     related TEXT, -- 表裡關係
     yinyang BOOLEAN GENERATED ALWAYS
         AS (CASE 
-                WHEN meridianName_zh LIKE "%陰%" OR meridianName_zh LIKE "任%" THEN 0
-                WHEN meridianName_zh LIKE "%帶%" OR meridianName_zh LIKE "%衝%" THEN NULL
+                WHEN meridianName_zh LIKE "%陰%" OR meridianName_zh LIKE "任%" OR meridianName_zh LIKE "%衝%" THEN 0 
             ELSE 1
             END),
     yinyang_tri BOOLEAN GENERATED ALWAYS

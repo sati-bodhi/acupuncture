@@ -11,10 +11,30 @@
     <dd class="col-sm-9">{{ located | safe }}</dd> <!--Use 'safe' tag to render template variable as html. -->
     <dt class="col-sm-3">經絡：</dt>
     <dd class="col-sm-9"><a href="{% url 'query' %}?q={{ meridian_id }}&category=meridian">{{ meridian }}</a></dd>
+
+    {% if entry_exit %}
+    <dt class="col-sm-3">出入穴：</dt>
+    <dd class="col-sm-9">{{ entry_exit }}</dd>
+    {% endif %}
+
+    {% if extra %}
+        <dt class="col-sm-3">交會穴：</dt>
+        <dd class="row col-sm-9">
+        {% for extra_id, vessel in extra %}
+            <a href="/query?q={{ extra_id }}&category=meridian">{{ vessel }}</a>
+        {% endfor %}
+        </dd>
+    {% endif %}
+
     {% if pentashu %}
         <dt class="col-sm-3">五輸穴：</dt>
-        <dd class="col-sm-9">{{ pentashu }}</dd>
+        <dd class="col-sm-9">{{ pentashu }}
+        {% if treat_meridian %}
+            ； {{ treat_meridian }}
+        {% endif %}
+        </dd>
     {% endif %}
+
     {% if mushu %}
         <dt class="col-sm-3">募俞穴：</dt>
         <dd class="col-sm-9">
@@ -25,6 +45,7 @@
             {% endfor %}
         </dd>
     {% endif %}
+
 </dl>
 {% endblock %}
 

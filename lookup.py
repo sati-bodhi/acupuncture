@@ -3,6 +3,8 @@ from pathlib import Path
 import os
 import hanlp
 from hanlp.components.tokenizers.transformer import TransformerTaggingTokenizer
+from acupuncture.db import Database
+
 
 DB_PATH = Path(os.path.abspath(__file__)).parents[0] / "acu.db"
 
@@ -260,6 +262,83 @@ def get_mu_shu_label(acupoint):
             return mu_shu
 
 
+def get_extra_id(acupoint):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f"""
+        SELECT meridianID, meridianName_zh FROM acuEx
+        JOIN Meridian on Meridian.ID = meridianID
+        WHERE bypass = "{acupoint}";
+        """)
+
+        extra = c.fetchall()
+
+        if extra:
+            return extra
+
+
+def get_meridian_treatment_pt(acupoint, action):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        if action == "++":
+
+            c.execute(f"""
+            SELECT meridianName_abbrev FROM Meridian
+            WHERE tonify = "{acupoint}";
+            """)
+
+            meridian = c.fetchone()
+
+        elif action == "--":
+
+            c.execute(f"""
+            SELECT meridianName_abbrev FROM Meridian
+            WHERE disperse = "{acupoint}";
+            """)
+
+            meridian = c.fetchone()
+
+        if meridian:
+            return meridian[0]
+
+
+def get_entry_exit_pt(acupoint):
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(f"""
+        SELECT meridianName_abbrev FROM horary
+        JOIN Meridian ON Meridian.ID = horary.ID
+        WHERE entry = "{acupoint}";
+        """)
+
+        entry_pt = c.fetchone()
+
+        c.execute(f"""
+        SELECT meridianName_abbrev FROM horary
+        JOIN Meridian ON Meridian.ID = horary.ID
+        WHERE exit = "{acupoint}";
+        """)
+
+        exit_pt = c.fetchone()
+
+        if entry_pt:
+            return entry_pt[0] + "入穴"
+        elif exit_pt:
+            return exit_pt[0] + "出穴"
+
+
+def id_to_meridian_name(idx):
+
+    db = Database()
+    name = db.exec_script(f"""
+    SELECT meridianName_zh from Meridian
+    WHERE ID = "{idx}";
+    """, fetch_one=True)[0]
+
+    return name
+
+
 def qixue_yinyang(renying, pulse):
     with sql.connect(DB_PATH) as conn:
         c = conn.cursor()
@@ -486,6 +565,7 @@ def get_horary(hour):
 
 
 if __name__ == '__main__':
+    pass
 
     # print(acupoints_in_meridian("CV"))
     # print(get_id("崑崙"))
@@ -497,4 +577,4 @@ if __name__ == '__main__':
     # diagnose, treat_qty, treat_qual = qixue_yinyang("L", "I")
     # print(get_pathogen("sy"))
     # print(phenom_preventive("寒", method="elem"))
-    print(get_horary(16))
+    # print(get_extra_label("ST30"))
