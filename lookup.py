@@ -328,13 +328,23 @@ def get_entry_exit_pt(acupoint):
             return exit_pt[0] + "出穴"
 
 
-def id_to_meridian_name(idx):
+def id_to_meridian_name(idx, abbrev=False):
 
     db = Database()
-    name = db.exec_script(f"""
-    SELECT meridianName_zh from Meridian
-    WHERE ID = "{idx}";
-    """, fetch_one=True)[0]
+
+    if abbrev:
+
+        name = db.exec_script(f"""
+        SELECT meridianName_abbrev from Meridian
+        WHERE ID = "{idx}";
+        """, fetch_one=True)[0]
+
+    else:
+
+        name = db.exec_script(f"""
+        SELECT meridianName_zh from Meridian
+        WHERE ID = "{idx}";
+        """, fetch_one=True)[0]
 
     return name
 
@@ -384,6 +394,14 @@ def parse_action(action, lang):
         return action
 
 
+def parse_state_symbol(state):
+    if state == "+":
+        zh = "實"
+    elif state == "-":
+        zh = "虛"
+    return zh
+
+
 def parse_acupoint(acupoint, lang="zh"):
     """Takes in the acupoint ID and returns name of the acupoint in the stated language."""
 
@@ -400,6 +418,38 @@ def parse_acupoint(acupoint, lang="zh"):
         return action
 
 
+def parse_state(list_of_states, meridian=False, abbrev=False):
+    """A state is given by a tuple, in the form of: (entitiy, state),
+    whereby entity is the id and state is given by a '+' string for excess,
+    and a '-' for deficiency."""
+    parsed = []
+
+    if len(list_of_states) > 1:
+        for item in list_of_states:
+            point_id, state = item
+
+            if meridian:
+                point = id_to_meridian_name(point_id, abbrev=abbrev)
+            else:
+                point = parse_acupoint(point_id)
+
+            state = parse_state_symbol(state)
+            parsed.append((point_id, point, state))
+
+    else:
+        point_id, state = list_of_states[0]
+
+        if meridian:
+            point = id_to_meridian_name(point_id, abbrev=abbrev)
+        else:
+            point = parse_acupoint(point_id)
+
+        state = parse_state(state)
+        parsed.append((point_id, point, state))
+
+    return iter(parsed)
+
+
 def parse_prescription(prescription, lang="zh"):
     """
     A valid prescription would be a single tuple in the form of (acupoint_id, action)
@@ -413,10 +463,13 @@ def parse_prescription(prescription, lang="zh"):
     parsed = []
     if len(prescription) > 1:
         for item in prescription:
-            point_id, action = item
-            point = parse_acupoint(point_id)
-            action = parse_action(action, lang)
-            parsed.append((point_id, point, action))
+            if item is None:
+                pass
+            else:
+                point_id, action = item
+                point = parse_acupoint(point_id)
+                action = parse_action(action, lang)
+                parsed.append((point_id, point, action))
 
     else:
         point_id, action = prescription[0]
@@ -425,6 +478,22 @@ def parse_prescription(prescription, lang="zh"):
         parsed.append((point_id, point, action))
 
     return iter(parsed)
+
+
+def render_prescription(prescription):
+    """Render parsed prescription as hyperlinked html text."""
+    # rendered = []
+    # for item in prescription:
+    #     if item is not None:
+    #         point_id, point, action = item
+    #         rendered.append(f"""{action}<a href='/query?q={point_id}&category=acupoint'>{point}</a>""")
+    #     else:
+    #         rendered.append(None)
+
+    rendered = [f"""{action}<a href='/query?q={point_id}&category=acupoint'>{point}</a>"""
+                for point_id, point, action in prescription]
+
+    return rendered
 
 
 def phenom_preventive(pathogen, method="mother_son"):

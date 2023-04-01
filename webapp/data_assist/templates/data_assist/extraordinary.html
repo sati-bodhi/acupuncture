@@ -7,6 +7,15 @@
 {% block diagnostic_form %}
 <form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'extraordinary' %}">
     {% csrf_token %}
+    {% include 'data_assist/include/extra_meridian_energy.html' %}
+
+    {% if meridian %}
+        {% include 'data_assist/include/relative_energies.html' %}
+    {% endif %}
+
+    {% if rel_state %}
+        {% include 'data_assist/include/extra_bypass.html' %}
+    {% endif %}
 
     <div class="col py-3">
         <button type="submit" class="btn btn-primary">Submit</button>
@@ -15,4 +24,28 @@
 {% endblock %}
 
 {% block diagnostic_result %}
+<h2 class="text-danger py-3">{{ ex_meridian }}證</h2>
+<div class="container col-lg-5">
+    <h3 class="text-info py-3">交會穴</h3>
+    <ul>
+        <div class="row py-2">
+            {% for point in jiaohuixue %}
+                <li>{{ point | safe }}</li>
+            {% endfor %}
+        </div>
+    </ul>
+</div>
+
+<div class="container col-lg-8">
+    <h3 class="text-info py-3">八脈交會穴</h3>
+    <ul>
+        {% for point, attrib in bamai %}
+        <div class="row py-3">
+            <h4 class="text-secondary py-2">{{ attrib | safe }}</h4>
+            <li>{{ point | safe }}</li>
+        </div>
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock %}

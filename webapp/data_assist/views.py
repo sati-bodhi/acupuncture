@@ -7,9 +7,9 @@ import pytz
 from acupuncture.diagnostics import solartime_by_ip, solartime_by_city, horary_calc
 import re
 
-
 # Tokenizer
 tok = update_tokenizer_wordlist()
+
 
 # Create your views here.
 
@@ -48,7 +48,7 @@ def query(request):
 
         if len(acupoint) > 1:
             multiple = True
-            acupoint = [acupoint[i:i+4] for i in range(0, len(acupoint), 4)]
+            acupoint = [acupoint[i:i + 4] for i in range(0, len(acupoint), 4)]
             return render(request, template_name='data_assist/query.html',
                           context={
                               "multiple": multiple,
@@ -187,7 +187,7 @@ def add_href(string, category="acupoint"):
     for i, point in enumerate(wordlist):
         acu_id, word = point
         href_str.append(segmented_str[i].replace(word,
-                          '<a href="/query?q=' + acu_id + '&category=' + category + '">' + word + '</a>'))
+                                                 '<a href="/query?q=' + acu_id + '&category=' + category + '">' + word + '</a>'))
 
     if len(href_str) < len(segmented_str):
         href_str.append(segmented_str[-1])
@@ -200,7 +200,7 @@ def add_href(string, category="acupoint"):
 def href_search(string):
     hits = []
     i = 0
-    string_iter=iter(string)
+    string_iter = iter(string)
     seg_list = tok(string)
 
     def narrow_down_on(target):
@@ -223,7 +223,7 @@ def href_search(string):
                             target = [candidate]
                             narrow_down_on(target)
                         else:
-                            target = [target[i-1]]
+                            target = [target[i - 1]]
                             narrow_down_on(target)
 
     chars = 0
@@ -239,14 +239,6 @@ def href_search(string):
     # hits = set(hits)
 
     return hits, cumulated_chars
-
-
-def render_prescription(prescription):
-    """Render parsed prescription as hyperlinked html text."""
-    rendered = [f"""{action}<a href='/query?q={point_id}&category=acupoint'>{point}</a>"""
-                for point_id, point, action in prescription]
-
-    return rendered
 
 
 def diagnose(request):
@@ -276,7 +268,6 @@ def eight_principles(request):
         qual_prescription += render_prescription(points)
 
         if pulse_yinyang:
-
             meridian_rel_yinyang_lvl = True  # meridian relative yinyang level
             prescription_list = meridian_yinyang(pulse_yinyang)
 
@@ -285,13 +276,13 @@ def eight_principles(request):
 
         return render(request, template_name='data_assist/eight_principles.html',
                       context={
-                                "result": result,
-                                "rel_yinyang": meridian_rel_yinyang_lvl,
-                                "diagnosis": diagnosis,
-                                "treat_qty": qty_prescription,
-                                "treat_qual": qual_prescription,
-                                "treat_meridian": meridian_prescription,
-                                })
+                          "result": result,
+                          "rel_yinyang": meridian_rel_yinyang_lvl,
+                          "diagnosis": diagnosis,
+                          "treat_qty": qty_prescription,
+                          "treat_qual": qual_prescription,
+                          "treat_meridian": meridian_prescription,
+                      })
 
     else:
         return render(request, template_name='data_assist/eight_principles.html')
@@ -353,7 +344,7 @@ def channels(request):
         return render(request, template_name='data_assist/channels.html')
     else:
         return render(request, template_name='data_assist/channels.html',
-                      context = {
+                      context={
                           "result": True,
                           "prevent": preventive,
                           "treat": expulsive,
@@ -370,29 +361,38 @@ def is_ajax(request):
 
 def horary(request):
     cities = ['Abu Dhabi', 'Adelaide', 'Almaty', 'Amsterdam', 'Antwerp', 'Arhus', 'Athens', 'Atlanta', 'Auckland',
-               'Baltimore', 'Bangalore', 'Bangkok', 'Barcelona', 'Beijing', 'Berlin', 'Birmingham', 'Bogota', 'Bologna',
-               'Boston', 'Bratislava', 'Brazilia', 'Brisbane', 'Brussels', 'Bucharest', 'Budapest', 'Buenos Aires',
-               'Cairo', 'Calgary', 'Cape Town', 'Caracas', 'Chicago', 'Cleveland', 'Cologne', 'Colombo', 'Columbus',
-               'Copenhagen', 'Dallas', 'Detroit', 'Dresden', 'Dubai', 'Dublin', 'Dusseldorf', 'Edinburgh', 'Frankfurt',
-               'Geneva', 'Genoa', 'Glasgow', 'Gothenburg', 'Guangzhou', 'Hamburg', 'Hanoi', 'Helsinki',
-               'Ho Chi Minh City', 'Hong Kong', 'Houston', 'Istanbul', 'Jakarta', 'Johannesburg', 'Kansas City', 'Kiev',
-               'Kuala Lumpur', 'Leeds', 'Lille', 'Lima', 'Lisbon', 'London', 'Los Angeles', 'Luxembourg', 'Lyon',
-               'Madrid', 'Manchester', 'Manila', 'Marseille', 'Melbourne', 'Mexico City', 'Miami', 'Milan',
-               'Minneapolis', 'Montevideo', 'Montreal', 'Moscow', 'Mumbai', 'Munich', 'New Delhi', 'New York', 'Osaka',
-               'Oslo', 'Paris', 'Philadelphia', 'Prague', 'Richmond', 'Rio de Janeiro', 'Riyadh', 'Rome', 'Rotterdam',
-               'San Francisco', 'Santiago', 'Sao Paulo', 'Seattle', 'Seoul', 'Shanghai', 'Singapore', 'St. Petersburg',
-               'Stockholm', 'Stuttgart', 'Sydney', 'Taipei', 'Tashkent', 'Tehran', 'Tel Aviv', 'The Hague', 'Tijuana',
-               'Tokyo', 'Toronto', 'Turin', 'Utrecht', 'Vancouver', 'Vienna', 'Warsaw', 'Washington', 'Wellington',
-               'Zurich']
-    cities_zh = ['阿布扎比', '阿德萊德', '阿拉木圖', '阿姆斯特丹', '安特衛普', '阿爾胡斯', '雅典', '亞特蘭大', '奧克蘭', '巴爾的摩', '班加羅爾', '曼谷', '巴塞羅那',
-                  '北京', '柏林', '伯明翰', '波哥大', '博洛尼亞', '波士頓', '布拉迪斯拉發', '巴西', '布里斯班', '布魯塞爾', '布加勒斯特', '布達佩斯', '布宜諾斯艾利斯',
-                  '開羅', '卡爾加里', '開普敦', '加拉加斯', '芝加哥', '克利夫蘭', '科隆', '科倫坡', '哥倫布', '哥本哈根', '達拉斯', '底特律', '德累斯頓', '迪拜',
-                  '都柏林', '杜塞爾多夫', '愛丁堡', '法蘭克福', '日內瓦', '熱那亞', '格拉斯哥', '哥德堡', '廣州', '漢堡', '河內', '赫爾辛基', '胡志明市', '香港',
-                  '休斯頓', '伊斯坦布爾', '雅加達', '約翰內斯堡', '堪薩斯城', '基輔', '吉隆坡', '利茲', '里爾', '利馬', '里斯本', '倫敦', '洛杉磯', '盧森堡',
-                  '里昂', '馬德里', '曼徹斯特', '馬尼拉', '馬賽', '墨爾本', '墨西哥城', '邁阿密', '米蘭', '明尼阿波利斯', '蒙得維的亞', '蒙特利爾', '莫斯科', '孟買',
-                  '慕尼黑', '新德里', '紐約', '大阪', '奧斯陸', '巴黎', '費城', '布拉格', '里士滿', '里約熱內盧', '利雅得', '羅馬', '鹿特丹', '舊金山', '聖地亞哥',
-                  '聖保羅', '西雅圖', '首爾', '上海', '新加坡', '聖彼得堡', '斯德哥爾摩', '斯圖加特', '悉尼', '台北', '塔什幹', '德黑蘭', '特拉維夫', '海牙',
-                  '蒂華納', '東京', '多倫多', '都靈', '烏得勒支', '溫哥華', '維也納', '華沙', '華盛頓', '惠靈頓', '蘇黎世']
+              'Baltimore', 'Bangalore', 'Bangkok', 'Barcelona', 'Beijing', 'Berlin', 'Birmingham', 'Bogota', 'Bologna',
+              'Boston', 'Bratislava', 'Brazilia', 'Brisbane', 'Brussels', 'Bucharest', 'Budapest', 'Buenos Aires',
+              'Cairo', 'Calgary', 'Cape Town', 'Caracas', 'Chicago', 'Cleveland', 'Cologne', 'Colombo', 'Columbus',
+              'Copenhagen', 'Dallas', 'Detroit', 'Dresden', 'Dubai', 'Dublin', 'Dusseldorf', 'Edinburgh', 'Frankfurt',
+              'Geneva', 'Genoa', 'Glasgow', 'Gothenburg', 'Guangzhou', 'Hamburg', 'Hanoi', 'Helsinki',
+              'Ho Chi Minh City', 'Hong Kong', 'Houston', 'Istanbul', 'Jakarta', 'Johannesburg', 'Kansas City', 'Kiev',
+              'Kuala Lumpur', 'Leeds', 'Lille', 'Lima', 'Lisbon', 'London', 'Los Angeles', 'Luxembourg', 'Lyon',
+              'Madrid', 'Manchester', 'Manila', 'Marseille', 'Melbourne', 'Mexico City', 'Miami', 'Milan',
+              'Minneapolis', 'Montevideo', 'Montreal', 'Moscow', 'Mumbai', 'Munich', 'New Delhi', 'New York', 'Osaka',
+              'Oslo', 'Paris', 'Philadelphia', 'Prague', 'Richmond', 'Rio de Janeiro', 'Riyadh', 'Rome', 'Rotterdam',
+              'San Francisco', 'Santiago', 'Sao Paulo', 'Seattle', 'Seoul', 'Shanghai', 'Singapore', 'St. Petersburg',
+              'Stockholm', 'Stuttgart', 'Sydney', 'Taipei', 'Tashkent', 'Tehran', 'Tel Aviv', 'The Hague', 'Tijuana',
+              'Tokyo', 'Toronto', 'Turin', 'Utrecht', 'Vancouver', 'Vienna', 'Warsaw', 'Washington', 'Wellington',
+              'Zurich']
+    cities_zh = ['阿布扎比', '阿德萊德', '阿拉木圖', '阿姆斯特丹', '安特衛普', '阿爾胡斯', '雅典', '亞特蘭大', '奧克蘭',
+                 '巴爾的摩', '班加羅爾', '曼谷', '巴塞羅那',
+                 '北京', '柏林', '伯明翰', '波哥大', '博洛尼亞', '波士頓', '布拉迪斯拉發', '巴西', '布里斯班',
+                 '布魯塞爾', '布加勒斯特', '布達佩斯', '布宜諾斯艾利斯',
+                 '開羅', '卡爾加里', '開普敦', '加拉加斯', '芝加哥', '克利夫蘭', '科隆', '科倫坡', '哥倫布', '哥本哈根',
+                 '達拉斯', '底特律', '德累斯頓', '迪拜',
+                 '都柏林', '杜塞爾多夫', '愛丁堡', '法蘭克福', '日內瓦', '熱那亞', '格拉斯哥', '哥德堡', '廣州', '漢堡',
+                 '河內', '赫爾辛基', '胡志明市', '香港',
+                 '休斯頓', '伊斯坦布爾', '雅加達', '約翰內斯堡', '堪薩斯城', '基輔', '吉隆坡', '利茲', '里爾', '利馬',
+                 '里斯本', '倫敦', '洛杉磯', '盧森堡',
+                 '里昂', '馬德里', '曼徹斯特', '馬尼拉', '馬賽', '墨爾本', '墨西哥城', '邁阿密', '米蘭', '明尼阿波利斯',
+                 '蒙得維的亞', '蒙特利爾', '莫斯科', '孟買',
+                 '慕尼黑', '新德里', '紐約', '大阪', '奧斯陸', '巴黎', '費城', '布拉格', '里士滿', '里約熱內盧',
+                 '利雅得', '羅馬', '鹿特丹', '舊金山', '聖地亞哥',
+                 '聖保羅', '西雅圖', '首爾', '上海', '新加坡', '聖彼得堡', '斯德哥爾摩', '斯圖加特', '悉尼', '台北',
+                 '塔什幹', '德黑蘭', '特拉維夫', '海牙',
+                 '蒂華納', '東京', '多倫多', '都靈', '烏得勒支', '溫哥華', '維也納', '華沙', '華盛頓', '惠靈頓',
+                 '蘇黎世']
 
     cities_zh = zip(cities, cities_zh)
 
@@ -405,6 +405,7 @@ def horary(request):
     hr_name, hr_meridian_id, hr_meridian = get_horary(curr_loc_hr)
 
     city = request.GET.get('city')
+    # TODO: Fix bug - some cities eg. Taipei, Beijing return null value.
 
     if request.method == "GET" and city is not None:
 
@@ -649,8 +650,10 @@ def mushu(request):
 
         diagnosis = ch.organ_viscera_zh_map[lord] + ["實" if state == "+" else "虛"][0]
         formula, logic = ch.diagnose(lord, state)
-        prescription = [point for point, desc in formula]
-        description = [desc for point, desc in formula]
+        prescription = [point for point, desc in [i for i in formula if i is not None]]
+        description = [desc for point, desc in [i for i in formula if i is not None]]
+        logic = [i for i in logic if i is not None]
+
         prescription = parse_prescription(prescription)
         prescription = render_prescription(prescription)
 
@@ -686,9 +689,97 @@ def mushu(request):
 
 
 def extraordinary(request):
-    ex = Extraordinary()
+    meridian_id = request.GET.get("target_meridian")
 
-    return render(request, template_name='data_assist/extraordinary.html')
+    ex = Extraordinary()
+    meridian_id_list = ex.acting_meridians
+    meridian_name_list = [id_to_meridian_name(m, abbrev=True) for m in meridian_id_list]
+    meridian_list = zip(meridian_name_list, meridian_id_list)
+
+    if meridian_id:
+
+        rel_state = request.GET.get("rel_state") == meridian_id
+
+        meridian_name = id_to_meridian_name(meridian_id, abbrev=True)
+        relative_states = ex.diagnose_deficiency(meridian_id)
+        rel_state_labels = []
+        for grp in relative_states:
+            rel_state_labels.append(parse_state(grp, meridian=True, abbrev=True))
+
+        if rel_state:
+            prescription = list(ex.treatment())
+            bypass_candidates = parse_prescription(prescription[0], "zh")
+
+            jiaohuixue_in_use = request.GET.getlist("meeting_pts")
+
+            if jiaohuixue_in_use:
+
+                prescription[0] = [(pt, action) for pt, action in prescription[0] if pt in jiaohuixue_in_use]
+                parsed_prescription = [parse_prescription(p, "zh") for p in prescription]
+
+                rendered_prescription = [render_prescription(p) for p in parsed_prescription]
+                jiaohuixue, bamai = rendered_prescription
+
+                rel_state_labels = [list(label_lst) for label_lst in rel_state_labels]
+                ex_meridian = "".join(rel_state_labels[0][1][1:])
+                target = rel_state_labels[0][1][1] + "－" + rel_state_labels[0][0][1]
+                complement = id_to_meridian_name(ex.paired_ex_meridian, abbrev=True) + "－" + \
+                             id_to_meridian_name(ex.paired_meridian, abbrev=True)
+                opposite = rel_state_labels[1][1][1] + "－" + rel_state_labels[1][0][1]
+                opposite_complement = id_to_meridian_name(ex.opp_paired_ex_meridian, abbrev=True) + "－" + \
+                                      id_to_meridian_name(ex.opp_paired_meridian, abbrev=True)
+
+                bamai_attrib = [
+                    target,
+                    complement + "<br>【相配】",
+                    opposite + "<br>【對側】",
+                    opposite_complement + "<br>【對側相配】",
+                ]
+
+                bamai = zip(bamai, bamai_attrib)
+
+                return render(request, template_name='data_assist/extraordinary.html',
+                              context={
+                                  "result": True,
+                                  "rel_state": True,
+                                  "meridian": True,
+                                  "ex_meridian": ex_meridian,
+                                  "meridian_id": meridian_id,
+                                  "meridian_name": meridian_name,
+                                  "meridian_list": meridian_list,
+                                  "relative_states": rel_state_labels,
+                                  "bypass": bypass_candidates,
+                                  "jiaohuixue": jiaohuixue,
+                                  "bamai": bamai,
+                              })
+
+            else:
+                return render(request, template_name='data_assist/extraordinary.html',
+                              context={
+                                  "rel_state": True,
+                                  "meridian": True,
+                                  "meridian_id": meridian_id,
+                                  "meridian_name": meridian_name,
+                                  "meridian_list": meridian_list,
+                                  "relative_states": rel_state_labels,
+                                  "bypass": bypass_candidates,
+                              })
+
+        else:
+            return render(request, template_name='data_assist/extraordinary.html',
+                          context={
+                              "meridian": True,
+                              "meridian_id": meridian_id,
+                              "meridian_name": meridian_name,
+                              "meridian_list": meridian_list,
+                              "relative_states": rel_state_labels,
+                          })
+
+    else:
+        return render(request, template_name='data_assist/extraordinary.html',
+                      context={
+                          "meridian_list": meridian_list,
+                      })
 
 
 def jingjin(request):

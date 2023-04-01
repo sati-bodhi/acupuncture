@@ -1,3 +1,11 @@
 blockquote small a {
-color: maroon !important
+color: maroon !important;
+}
+
+.- {
+color: red !important;
+}
+
+.+ {
+color: violet !important;
 }

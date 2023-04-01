@@ -1,0 +1,38 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+對應能量
+{% endblock %}
+
+{% block fieldset_content %}
+<h2 class="text-secondary py-2">請確認</h2>
+<div class="col py-3 justify-content-center">
+
+    {% for list in relative_states %}
+        <ul>
+        {% for id, name, state in list %}
+            <li><a href="/query?q={{id}}&category=meridian">{{ name }}</a>
+                {% if state == "虛" %}
+                <span style="color:red">{{ state }}</span>
+                {% elif state == "實" %}
+                <span style="color:yellow">{{ state }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% endfor %}
+
+</div>
+<hr>
+<div class="form-check py-3 col-5">
+    {% if rel_state %}
+        <input class="form-check-input" type="checkbox" value="{{ meridian_id }}" id="rel_state_confirm" name="rel_state" checked>
+    {% else %}
+        <input class="form-check-input" type="checkbox" value="{{ meridian_id }}" id="rel_state_confirm" name="rel_state">
+    {% endif %}
+    <label class="form-check-label" for="rel_state_confirm">
+    脈象正確
+  </label>
+</div>
+{% endblock %}

@@ -554,6 +554,8 @@ class Chronic(Element):
                     elif self.jb_func == "功能":
                         # 補以達到瀉的作用。
                         self.formula.append([(acupoint, "++"), desc])
+            # else:
+            #     self.formula.append([target[0][3] + "無" + "".join(target[0][4:6]) + "性俞穴"])
 
         return self.formula
 
@@ -579,6 +581,8 @@ class Chronic(Element):
                         self.formula.append([(acupoint, "++"), desc])
                     elif self.jb_func == "功能":
                         self.formula.append([(acupoint, "++"), desc])
+            # else:
+            #     self.formula.append([target[0][3] + "無" + "".join(target[0][4:6]) + "性募穴"])
 
         return self.formula
 
@@ -653,42 +657,83 @@ class Chronic(Element):
         if state == "+":
             # 實則瀉其子。
             self.formula += self.disperse_son(lord)
-            if self.formula[-1][0][-1] == "++":
-                self.logic.append("實則瀉其子；以補為瀉。")
+
+            if not self.formula:
+                self.formula.append(None)
+                self.logic.append(None)
             else:
-                self.logic.append("實則瀉其子。")
+
+                if self.formula[-1][0][-1] == "++":
+                    self.logic.append("實則瀉其子；以補為瀉。")
+                else:
+                    self.logic.append("實則瀉其子。")
+
             # 瀉自身。
             self.formula += self.adjust_lord(lord, "--")
-            if self.formula[-1][0][-1] == "++":
-                self.logic.append("瀉自身；以補為瀉。")
+
+            if not self.formula:
+                self.formula.append(None)
+                self.logic.append(None)
             else:
-                self.logic.append("瀉自身。")
+
+                if self.formula[-1][0][-1] == "++":
+                    self.logic.append("瀉自身；以補為瀉。")
+                else:
+                    self.logic.append("瀉自身。")
+
             # 補臣，使剋君。
             self.formula += self.adjust_minister(lord, "++")
-            if self.formula[-1][0][-1] == "--":
-                self.logic.append("補臣，使剋君；以瀉為補。")
+
+            if not self.formula:
+                self.formula.append(None)
+                self.logic.append(None)
             else:
-                self.logic.append("補臣，使剋君。")
+
+                if self.formula[-1][0][-1] == "--":
+                    self.logic.append("補臣，使剋君；以瀉為補。")
+                else:
+                    self.logic.append("補臣，使剋君。")
 
         elif state == "-":
+
             # 虛則補其母。
             self.formula += self.tonify_mother(lord)
-            if self.formula[-1][0][-1] == "--":
-                self.logic.append("虛則補其母；以瀉為補。")
+
+            if not self.formula:
+                self.formula.append(None)
+                self.logic.append(None)
             else:
-                self.logic.append("虛則補其母。")
+
+                if self.formula[-1][0][-1] == "--":
+                    self.logic.append("虛則補其母；以瀉為補。")
+                else:
+                    self.logic.append("虛則補其母。")
+
             # 補自身。
             self.formula += self.adjust_lord(lord, "++")
-            if self.formula[-1][0][-1] == "--":
-                self.logic.append("補自身；以瀉為補。")
+
+            if not self.formula:
+                self.formula.append(None)
+                self.logic.append(None)
             else:
-                self.logic.append("補自身。")
+
+                if self.formula[-1][0][-1] == "--":
+                    self.logic.append("補自身；以瀉為補。")
+                else:
+                    self.logic.append("補自身。")
+
             # 瀉臣，減緩剋君的能量。
             self.formula += self.adjust_minister(lord, "--")
-            if self.formula[-1][0][-1] == "++":
-                self.logic.append("瀉臣，減緩剋君的力道；以補為瀉。")
+
+            if not self.formula:
+                self.formula.append(None)
+                self.logic.append(None)
             else:
-                self.logic.append("瀉臣，減緩剋君的力道。")
+
+                if self.formula[-1][0][-1] == "++":
+                    self.logic.append("瀉臣，減緩剋君的力道；以補為瀉。")
+                else:
+                    self.logic.append("瀉臣，減緩剋君的力道。")
 
         return self.formula, self.logic
 

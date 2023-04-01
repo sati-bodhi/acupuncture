@@ -1,0 +1,26 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+交會穴
+{% endblock %}
+
+{% block fieldset_content %}
+<h2 class="text-secondary pt-2">請選擇</h2>
+<p class="pb-3"><small>與疼痛或病症有關的交會穴</small></p>
+<div class="col-lg-10 py-3">
+
+        {% for id, name, action in bypass %}
+
+        <div class="form-group row justify-content-center">
+            <input class="form-check-input" type="checkbox" value="{{id}}" id="treat_{{id}}" name="meeting_pts">
+            <label class="form-check-label" style="float: left; width: calc(100%/2)" for="treat_{{id}}">
+                <a href="/query?q={{id}}&category=meridian">{{ name }}</a>（{{id}}）
+            </label>
+        </div>
+
+        {% endfor %}
+
+</div>
+
+{% endblock %}

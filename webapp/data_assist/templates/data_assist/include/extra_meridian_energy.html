@@ -1,0 +1,30 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+正經能量
+{% endblock %}
+
+{% block fieldset_content %}
+<h2 class="text-secondary py-2">調理</h2>
+<div class="row py-3 justify-content-center">
+    <div class="form-group col-lg-5 col-sm">
+        <select name="target_meridian" class="form-select py-1" style="font-size:20px;" id="target_meridian">
+
+            {% if meridian %}
+            <option value="{{ meridian_id }}" selected>{{ meridian_name }}（{{ meridian_id }}）</option>
+            {% else %}
+            <option value="" selected></option>
+            {% endif %}
+
+            {% for name, meridian_id in meridian_list %}
+            <option value="{{ meridian_id }}">{{ name }}（{{ meridian_id }}）</option>
+            {% endfor %}
+
+        </select>
+
+    </div>
+    <div class="form-group-addon col-lg-2">虛</div>
+</div>
+
+{% endblock %}

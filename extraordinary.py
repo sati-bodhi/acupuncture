@@ -91,6 +91,10 @@ class Extraordinary:
 
     def __init__(self):
 
+        self.opp_paired_ex_meridian = None
+        self.opp_paired_meridian = None
+        self.paired_ex_meridian = None
+        self.paired_meridian = None
         self.meridian = None
         self.opp_meridian = None
         self.ex_meridian = None
@@ -102,14 +106,20 @@ class Extraordinary:
             "YinLV": yinlv,
             "YangLV": yanglv,
             "YinHV": yinhv,
-            "YangHV": yanghv
+            "YangHV": yanghv,
+            "CV": self.acupoints_in_meridian("CV"),
+            "GV": self.acupoints_in_meridian("GV"),
               }
+
+        self.meridian_to_ex = {"".join(x for x in k if not x.isdigit()): v for k, v in zip(self.MASTER_PTS.values(), self.MASTER_PTS.keys())}
 
         self.acting_meridians = [self.meridian_of(point)
                                  for point in list(self.MASTER_PTS.values())]
 
         self.pt_opposites = [(self.MASTER_PTS[yin], self.MASTER_PTS[yang]) for yin, yang in self.OPPOSITES]
         self.meridian_opposites = [(self.meridian_of(yin), self.meridian_of(yang)) for yin, yang in self.pt_opposites]
+        self.pt_pairs = [(self.MASTER_PTS[a], self.MASTER_PTS[b]) for a, b in self.PAIRS]
+        self.meridian_pairs = [(self.meridian_of(a), self.meridian_of(b)) for a, b in self.pt_pairs]
 
     @staticmethod
     def meridian_of(acupoint):
@@ -211,9 +221,16 @@ class Extraordinary:
         """Assume deficiency because extraordinary meridian pathologies
         are always due to excess."""
         self.meridian = (meridian, "-")
-        self.opp_meridian = self.relative_energies(meridian, "-")
         self.ex_meridian = self.meridian_to_ex_meridian_energy(meridian, "-")
+
+        self.opp_meridian = self.relative_energies(meridian, "-")
         self.opp_ex_meridian = self.relative_energies(*self.ex_meridian)
+
+        self.paired_meridian = self.get_paired_elem(meridian, self.meridian_pairs)
+        self.paired_ex_meridian = self.meridian_to_ex[self.paired_meridian]
+
+        self.opp_paired_meridian = self.get_paired_elem(self.opp_meridian[0], self.meridian_pairs)
+        self.opp_paired_ex_meridian = self.meridian_to_ex[self.opp_paired_meridian]
 
         return [(self.meridian, self.ex_meridian),
                 (self.opp_meridian, self.opp_ex_meridian)]
@@ -234,7 +251,7 @@ class Extraordinary:
         bypass = self.bypass[ex_meridian]
 
         if ex_meridian in ["CV", "GV"]:
-            jiaohuixue = [(pt, "++") for pt in self.acupoints_in_meridian(ex_meridian)]
+            jiaohuixue = [(pt, "++") for pt in bypass]
         else:
             jiaohuixue = [(pt, "--") for pt in bypass]
 
@@ -245,7 +262,7 @@ class Extraordinary:
         opposite_complement_vessel = self.get_paired_elem(opp_ex_meridian, self.PAIRS)
         opposite_complement = (self.MASTER_PTS[opposite_complement_vessel], "--")
 
-        return jiaohuixue, target, complement, opposite, opposite_complement
+        return jiaohuixue, [target, complement, opposite, opposite_complement]
 
 
 if __name__ == '__main__':
