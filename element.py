@@ -1,7 +1,6 @@
 import base64
 from io import BytesIO
 
-import matplotlib
 from matplotlib import pyplot as plt
 import networkx as nx
 import numpy as np
@@ -14,18 +13,19 @@ from datetime import datetime
 from acupuncture.diagnostics import solartime_by_ip
 from acupuncture.db import Database
 
-ELEM = ("木", "火", "土", "金", "水")
-ELEM_CORRESPOND = [
-    ("木", "春", "LR"),
-    ("火", "夏", "HT"),
-    ("相火", None, "PC"),
-    ("土", "長夏", "SP"),
-    ("金", "秋", "LU"),
-    ("水", "冬", "KI"),
-]
-
 
 class Element:
+
+    ELEM = ("木", "火", "土", "金", "水")
+
+    ELEM_CORRESPOND = [
+        ("木", "春", "LR", "風", "東"),
+        ("火", "夏", "HT", "熱", "南"),
+        ("相火", None, "PC", None, None),
+        ("土", "長夏", "SP", "濕", "中"),
+        ("金", "秋", "LU", "燥", "西"),
+        ("水", "冬", "KI", "寒", "北"),
+    ]
 
     ORGAN_ENERGY = [("LR", "木"), ("HT", "火"), ("SP", "土"), ("LU", "金"), ("KI", "水")]
 
@@ -33,11 +33,11 @@ class Element:
         self.organ = None
         self.viscera = None
         self.map_dict = None
-        self.inhibited = None
         self.lord = None
-        self.servant = None
         self.mother = None
         self.son = None
+        self.minister = None
+        self.inhibited = None
         self.organ_viscera_zh_map = self.organ_viscera_lang_map("zh")
         self.organ_viscera_en_map = self.organ_viscera_lang_map("en")
 
@@ -71,8 +71,8 @@ class Element:
 
     def servant_of(self, lord, cycle):
         """The returned organ energy is inhibited by this organ."""
-        self.servant = [s for s, l in cycle if l == lord]
-        return self.servant
+        self.minister = [s for s, l in cycle if l == lord]
+        return self.minister
 
     def organ_to_energy(self, organ):
         energy = [e for o, e in self.ORGAN_ENERGY if organ == o][0]
@@ -82,7 +82,8 @@ class Element:
         organ = [o for o, e in self.ORGAN_ENERGY if energy == e][0]
         return organ
 
-    def organ_viscera_lang_map(self, lang):
+    @staticmethod
+    def organ_viscera_lang_map(lang):
         """Map organ-viscera ID to a target language for processing or display."""
         col_name = lang + "_name"
 
@@ -91,9 +92,9 @@ class Element:
         SELECT ID, {col_name} FROM Organ_Viscera;
         """)
 
-        self.map_dict = {key: name for key, name in mapping}
+        map_dict = {key: name for key, name in mapping}
 
-        return self.map_dict
+        return map_dict
 
     def organ_viscera_zh(self, organ_id):
         """Get corresponding organ-viscera 臟腑 in Chinese
@@ -193,7 +194,7 @@ class Acute(Element):
         self.viscera = None
         self.organ = None
 
-        self.ELEM_CYCLE_GEN = self.make_cyclic_edge(ELEM)  # 5 element generation cycle edges
+        self.ELEM_CYCLE_GEN = self.make_cyclic_edge(self.ELEM)  # 5 element generation cycle edges
         self.ELEM_CYCLE_INHIBIT = self.make_cyclic_edge(("木", "土", "水", "火", "金"))
 
     def graph(self):
@@ -352,7 +353,7 @@ class Acute(Element):
                 self.prescription.append(self.tonify_mother(lord))
                 self.logic.append("虛則補其母。")
 
-            if "minister" in excess:
+            if "minister" in excess or ("minister" not in excess and "minister" not in deficient):
                 # ===瀉臣本穴； 減弱臣相剋的聯繫===
                 self.prescription.append(self.adjust_minister_energy(lord, "--"))
                 self.logic.append("瀉臣本穴，減弱臣相剋的力道。")
@@ -365,7 +366,11 @@ class Acute(Element):
                 # === 强化君生子的聯繫，把君多餘的能量導向子 ===
                 self.prescription.append(self.enhance_connection(lord, "son"))
                 self.logic.append("強化君與子的聯繫，把多餘能量導向子。")
-            else:
+            elif "son" in excess:
+                # ===讓多餘能量流向子（實則瀉其子）===
+                self.prescription.append(self.disperse_son(lord))
+                self.logic.append("實則瀉其子。")
+            elif "son" not in excess and "son" not in deficient:
                 # ===讓多餘能量流向子（實則瀉其子）===
                 self.prescription.append(self.disperse_son(lord))
                 self.logic.append("實則瀉其子。")
@@ -375,6 +380,10 @@ class Acute(Element):
                 self.prescription.append(self.enhance_connection(lord, "minister"))
                 self.logic.append("強化臣與君的聯繫，讓臣來剋君。")
             elif "minister" in deficient:
+                # === 補臣本穴，加強臣剋君的力道 ===
+                self.prescription.append(self.adjust_minister_energy(lord, "++"))
+                self.logic.append("補臣本穴，強化臣剋君的力道。")
+            elif "minister" not in excess and "minister" not in deficient:
                 # === 補臣本穴，加強臣剋君的力道 ===
                 self.prescription.append(self.adjust_minister_energy(lord, "++"))
                 self.logic.append("補臣本穴，強化臣剋君的力道。")
@@ -761,7 +770,7 @@ class Lord(Acute, Chronic):
                 self.inhibited_by(self.organ_to_energy(lord), self.ELEM_CYCLE_INHIBIT)[0])
 
 
-class Season:
+class Season(Element):
     SEASONS = ["春", "夏", "秋", "冬"]
     SEASON_ENERGY = {
         "春": "木",
@@ -888,7 +897,7 @@ class Season:
 
     def seasonal_lord(self, season):
         """Get seasonal lord (organ energy) from season."""
-        self.organ = [o for e, s, o in ELEM_CORRESPOND if s == season]
+        self.organ = [o for e, s, o, p, b in self.ELEM_CORRESPOND if s == season]
         return self.organ[0]
 
     def earth_energy_timeframe(self, solar_term):

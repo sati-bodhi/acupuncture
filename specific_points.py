@@ -1,7 +1,3 @@
-import sqlite3 as sql
-import pandas as pd
-from requests import Session
-from acupuncture.lookup import *
 from acupuncture.build_db import *
 from tabula import read_pdf
 import numpy as np
@@ -131,6 +127,7 @@ def get_shu_table(connect: sql.Connection):
         # df.to_sql('pentaShu_raw', connect, if_exists='replace', index=False)
 
     return df
+
 
 def create_tables(connect: sql.Connection):
     """Run script to create tables for specific points."""
@@ -373,6 +370,8 @@ def update_org_vis_table(connect: sql.Connection):
         SET zh_name = "{name}"
         WHERE ID = "{id}";
         ''')
+
+# TODO: Possibility of incorporating glossary data into database.
 
 
 def glossary():

@@ -1,8 +1,16 @@
-<fieldset class="border p-5 m-3">
-    <div class="form-group row py-3 justify-content-center">
-        <legend class="form-label py-4"><h1>根結穴</h1>
-        <small class="text-secondary">把能量導引到手部經脈</small></legend>
-        <div class="row justify-content-center py-2">
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+根結穴
+{% endblock %}
+
+{% block fieldset_subtitle %}
+把能量導引到手部經脈
+{% endblock %}
+
+{% block fieldset_content %}
+<div class="row justify-content-center py-2">
             <div class="form-check col-sm-4 py-sm-2">
                 <div class="row py-sm-2">
                   <input class="form-check-input" type="checkbox" name="knot" value="ty" id="kn_t0">
@@ -46,5 +54,12 @@
                 </div>
             </div>
         </div>
+{% endblock %}
+
+<fieldset class="border p-5 m-3">
+    <div class="form-group row py-3 justify-content-center">
+        <legend class="form-label py-4"><h1></h1>
+        </legend>
+
     </div>
 </fieldset>

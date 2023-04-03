@@ -1,68 +1,69 @@
 from acupuncture.db import Database
+from acupuncture.meridian import Meridian
+from acupuncture.lookup import Calc
 import numpy as np
 import pandas as pd
 
-# 十二正經交會穴
 
-tv = [
-    'ST30',
-    'KI11',
-    'KI12',
-    'KI13',
-    'KI14',
-    'KI15',
-    'KI16',
-    'KI17',
-    'KI18',
-    'KI19',
-    'KI20',
-    'KI21',
-]
+class Extraordinary(Meridian, Calc):
+    # 十二正經交會穴
 
-bv = ['GB26', 'GB27', 'GB28', 'LR13']
+    TV = [
+        'ST30',
+        'KI11',
+        'KI12',
+        'KI13',
+        'KI14',
+        'KI15',
+        'KI16',
+        'KI17',
+        'KI18',
+        'KI19',
+        'KI20',
+        'KI21',
+    ]
 
-yinlv = ['KI9', 'SP13', 'SP15', 'SP16', 'LR14', 'CV22', 'CV23']
+    BV = ['GB26', 'GB27', 'GB28', 'LR13']
 
-yanglv = [
-    'BL63',
-    'GB35',
-    'GB24',
-    'SI10',
-    'LI14',
-    'GB21',
-    'TE15',
-    'GB13',
-    'GB14',
-    'GB15',
-    'GB16',
-    'GB17',
-    'GB18',
-    'GB19',
-    'GB20',
-    'GV16',
-    'GV15',
-]
+    YINLV = ['KI9', 'SP13', 'SP15', 'SP16', 'LR14', 'CV22', 'CV23']
 
-yinhv = ['KI2', 'KI6', 'KI8', 'BL1']
+    YANGLV = [
+        'BL63',
+        'GB35',
+        'GB24',
+        'SI10',
+        'LI14',
+        'GB21',
+        'TE15',
+        'GB13',
+        'GB14',
+        'GB15',
+        'GB16',
+        'GB17',
+        'GB18',
+        'GB19',
+        'GB20',
+        'GV16',
+        'GV15',
+    ]
 
-yanghv = [
-    'BL62',
-    'BL61',
-    'BL59',
-    'GB29',
-    'SI10',
-    'LI15',
-    'LI16',
-    'ST4',
-    'ST3',
-    'ST1',
-    'BL1',
-    'GB20',
-    'GV16',
-]
+    YINHV = ['KI2', 'KI6', 'KI8', 'BL1']
 
-
-class Extraordinary:
+    YANGHV = [
+        'BL62',
+        'BL61',
+        'BL59',
+        'GB29',
+        'SI10',
+        'LI15',
+        'LI16',
+        'ST4',
+        'ST3',
+        'ST1',
+        'BL1',
+        'GB20',
+        'GV16',
+    ]
 
     PAIRS = [
         ("TV", "YinLV"),
@@ -91,40 +92,38 @@ class Extraordinary:
 
     def __init__(self):
 
-        self.opp_paired_ex_meridian = None
-        self.opp_paired_meridian = None
-        self.paired_ex_meridian = None
-        self.paired_meridian = None
+        super().__init__()
         self.meridian = None
-        self.opp_meridian = None
         self.ex_meridian = None
+        self.paired_meridian = None
+        self.paired_ex_meridian = None
+
+        self.opp_meridian = None
         self.opp_ex_meridian = None
+        self.opp_paired_meridian = None
+        self.opp_paired_ex_meridian = None
 
         self.bypass = {
-            "TV": tv,
-            "BV": bv,
-            "YinLV": yinlv,
-            "YangLV": yanglv,
-            "YinHV": yinhv,
-            "YangHV": yanghv,
+            "TV": self.TV,
+            "BV": self.BV,
+            "YinLV": self.YINLV,
+            "YangLV": self.YANGLV,
+            "YinHV": self.YINHV,
+            "YangHV": self.YANGHV,
             "CV": self.acupoints_in_meridian("CV"),
             "GV": self.acupoints_in_meridian("GV"),
               }
 
         self.meridian_to_ex = {"".join(x for x in k if not x.isdigit()): v for k, v in zip(self.MASTER_PTS.values(), self.MASTER_PTS.keys())}
 
-        self.acting_meridians = [self.meridian_of(point)
+        self.acting_meridians = [self.meridian_of(point)  # not all meridians are involved.
                                  for point in list(self.MASTER_PTS.values())]
 
         self.pt_opposites = [(self.MASTER_PTS[yin], self.MASTER_PTS[yang]) for yin, yang in self.OPPOSITES]
         self.meridian_opposites = [(self.meridian_of(yin), self.meridian_of(yang)) for yin, yang in self.pt_opposites]
+
         self.pt_pairs = [(self.MASTER_PTS[a], self.MASTER_PTS[b]) for a, b in self.PAIRS]
         self.meridian_pairs = [(self.meridian_of(a), self.meridian_of(b)) for a, b in self.pt_pairs]
-
-    @staticmethod
-    def meridian_of(acupoint):
-        meridian = "".join(x for x in acupoint if not x.isdigit())
-        return meridian
 
     @staticmethod
     def generate_accompany_data(ex_lst, ex_meridian):
@@ -165,30 +164,6 @@ class Extraordinary:
         db = Database()
         db.df_to_sql(df, "acuEx")
 
-    @staticmethod
-    def elem_index_in_list_of_tuples(elem, lst):
-        """Return index element in nested tuple."""
-        i = None
-        j = None
-        for i, tup in enumerate(lst):
-            if elem in tup:
-                j = tup.index(elem)
-
-                return i, j
-
-    def get_paired_elem(self, elem, lst):
-        """Returns the paired element from a list of binary tuples."""
-        i, j = self.elem_index_in_list_of_tuples(elem, lst)
-        if j == 0:
-            paired = lst[i][1]
-
-            return paired
-
-        elif j == 1:
-            paired = lst[i][0]
-
-            return paired
-
     def relative_energies(self, meridian, state):
 
         i = None
@@ -196,10 +171,10 @@ class Extraordinary:
         opp_meridian = None
 
         if meridian in self.acting_meridians:  # is ordinary vessel with a master point
-            opp_meridian = self.get_paired_elem(meridian, self.meridian_opposites)
+            opp_meridian = self.get_paired_elem_from_list(meridian, self.meridian_opposites)
 
         elif meridian in list(self.MASTER_PTS.keys()):  # is extraordinary vessel
-            opp_meridian = self.get_paired_elem(meridian, self.OPPOSITES)
+            opp_meridian = self.get_paired_elem_from_list(meridian, self.OPPOSITES)
 
         if opp_meridian:
             if state == "-":
@@ -226,24 +201,14 @@ class Extraordinary:
         self.opp_meridian = self.relative_energies(meridian, "-")
         self.opp_ex_meridian = self.relative_energies(*self.ex_meridian)
 
-        self.paired_meridian = self.get_paired_elem(meridian, self.meridian_pairs)
+        self.paired_meridian = self.get_paired_elem_from_list(meridian, self.meridian_pairs)
         self.paired_ex_meridian = self.meridian_to_ex[self.paired_meridian]
 
-        self.opp_paired_meridian = self.get_paired_elem(self.opp_meridian[0], self.meridian_pairs)
+        self.opp_paired_meridian = self.get_paired_elem_from_list(self.opp_meridian[0], self.meridian_pairs)
         self.opp_paired_ex_meridian = self.meridian_to_ex[self.opp_paired_meridian]
 
         return [(self.meridian, self.ex_meridian),
                 (self.opp_meridian, self.opp_ex_meridian)]
-
-    @staticmethod
-    def acupoints_in_meridian(meridian):
-        db = Database()
-        acupoints = db.exec_script(f"""
-        SELECT ID FROM Acupoint
-        WHERE meridianID = "{meridian}";
-        """)
-
-        return [i[0] for i in acupoints]
 
     def treatment(self):
         ex_meridian = self.ex_meridian[0]
@@ -256,10 +221,10 @@ class Extraordinary:
             jiaohuixue = [(pt, "--") for pt in bypass]
 
         target = (self.MASTER_PTS[ex_meridian], "++")
-        complement_vessel = self.get_paired_elem(ex_meridian, self.PAIRS)
+        complement_vessel = self.get_paired_elem_from_list(ex_meridian, self.PAIRS)
         complement = (self.MASTER_PTS[complement_vessel], "++")
         opposite = (self.MASTER_PTS[opp_ex_meridian], "--")
-        opposite_complement_vessel = self.get_paired_elem(opp_ex_meridian, self.PAIRS)
+        opposite_complement_vessel = self.get_paired_elem_from_list(opp_ex_meridian, self.PAIRS)
         opposite_complement = (self.MASTER_PTS[opposite_complement_vessel], "--")
 
         return jiaohuixue, [target, complement, opposite, opposite_complement]

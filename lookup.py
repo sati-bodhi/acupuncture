@@ -11,6 +11,150 @@ DB_PATH = Path(os.path.abspath(__file__)).parents[0] / "acu.db"
 tok: TransformerTaggingTokenizer = hanlp.load(hanlp.pretrained.tok.COARSE_ELECTRA_SMALL_ZH)
 
 
+class Calc:
+    """Transcend lists and tuples to zero in on the data."""
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def elem_index_in_list_of_tuples(elem, lst):  # TODO: Move to lookup.
+        """Return index element in nested tuple.
+        Useful for parsing parallel lists."""
+
+        for i, tup in enumerate(lst):
+            if elem in tup:
+                j = tup.index(elem)
+
+                return i, j
+
+    @staticmethod
+    def paired_with(elem, tup):
+        """Returns the paired element in a binary tuple."""
+        return tup[tup.index(elem) - 1]
+
+    def get_paired_elem_from_list(self, elem, lst):  # TODO: Move to lookup.
+        """Returns the paired element from a list of binary tuples."""
+        return [self.paired_with(elem, tup) for tup in lst if elem in tup][0]
+
+
+def parse_action(action, lang):
+    """Takes in an action symbol and returns the name of that symbol in the stated language."""
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT {lang} FROM treatment_action
+        WHERE id = "{action}"
+        ''')
+
+        action = c.fetchone()[0]
+
+        return action
+
+
+def parse_state_symbol(state):
+    if state == "+":
+        zh = "實"
+    elif state == "-":
+        zh = "虛"
+    return zh
+
+
+def parse_acupoint(acupoint, lang="zh"):
+    """Takes in the acupoint ID and returns name of the acupoint in the stated language."""
+
+    with sql.connect(DB_PATH) as conn:
+        c = conn.cursor()
+
+        c.execute(f'''
+        SELECT acuName_{lang} FROM Acupoint
+        WHERE id = "{acupoint}"
+        ''')
+
+        action = c.fetchone()[0]
+
+        return action
+
+
+def parse_state(self, list_of_states, meridian=False, abbrev=False):
+    """A state is given by a tuple, in the form of: (entitiy, state),
+    whereby entity is the id and state is given by a '+' string for excess,
+    and a '-' for deficiency."""
+    parsed = []
+
+    if len(list_of_states) > 1:
+        for item in list_of_states:
+            point_id, state = item
+
+            if meridian:
+                point = id_to_meridian_name(point_id, abbrev=abbrev)
+            else:
+                point = self.parse_acupoint(point_id)
+
+            state = self.parse_state_symbol(state)
+            parsed.append((point_id, point, state))
+
+    else:
+        point_id, state = list_of_states[0]
+
+        if meridian:
+            point = id_to_meridian_name(point_id, abbrev=abbrev)
+        else:
+            point = self.parse_acupoint(point_id)
+
+        state = self.parse_state(state)
+        parsed.append((point_id, point, state))
+
+    return iter(parsed)
+
+
+def parse_prescription(prescription, lang="zh"):
+    """
+    A valid prescription would be a single tuple in the form of (acupoint_id, action)
+    where 'action' is given by the symbols '++' or '--'.
+    This function would take in a list of such prescriptions
+    and return the human-friendly value in the specified language.
+    :param prescription:
+    :param lang:
+    :return:
+    """
+    parsed = []
+    if len(prescription) > 1:
+        for item in prescription:
+            if item is None:
+                pass
+            else:
+                point_id, action = item
+                point = parse_acupoint(point_id)
+                action = parse_action(action, lang)
+                parsed.append((point_id, point, action))
+
+    else:
+        point_id, action = prescription[0]
+        point = parse_acupoint(point_id)
+        action = parse_action(action, lang)
+        parsed.append((point_id, point, action))
+
+    return iter(parsed)
+
+
+def render_prescription(prescription):
+    """Render parsed prescription as hyperlinked html text."""
+    # rendered = []
+    # for item in prescription:
+    #     if item is not None:
+    #         point_id, point, action = item
+    #         rendered.append(f"""{action}<a href='/query?q={point_id}&category=acupoint'>{point}</a>""")
+    #     else:
+    #         rendered.append(None)
+
+    rendered = [f"""{action}<a href='/query?q={point_id}&category=acupoint'>{point}</a>"""
+                for point_id, point, action in prescription]
+
+    return rendered
+
+
 def get_acupoint(query, with_alias=True, fuzzy=True):
     """Return ID and traditional Chinese name of acupoint, given a random search string."""
     with sql.connect(DB_PATH) as conn:
@@ -89,6 +233,27 @@ def get_id(query, with_alias=True, fuzzy=True):
         print(f"Your keyword '{query}' corresponds to the acupoint {rslt[0][1]} of ID {rslt[0][0]}.")
 
         return rslt[0][0]
+
+
+def id_to_meridian_name(idx, abbrev=False):
+
+    db = Database()
+
+    if abbrev:
+
+        name = db.exec_script(f"""
+        SELECT meridianName_abbrev from Meridian
+        WHERE ID = "{idx}";
+        """, fetch_one=True)[0]
+
+    else:
+
+        name = db.exec_script(f"""
+        SELECT meridianName_zh from Meridian
+        WHERE ID = "{idx}";
+        """, fetch_one=True)[0]
+
+    return name
 
 
 def get_route(query):
@@ -328,27 +493,6 @@ def get_entry_exit_pt(acupoint):
             return exit_pt[0] + "出穴"
 
 
-def id_to_meridian_name(idx, abbrev=False):
-
-    db = Database()
-
-    if abbrev:
-
-        name = db.exec_script(f"""
-        SELECT meridianName_abbrev from Meridian
-        WHERE ID = "{idx}";
-        """, fetch_one=True)[0]
-
-    else:
-
-        name = db.exec_script(f"""
-        SELECT meridianName_zh from Meridian
-        WHERE ID = "{idx}";
-        """, fetch_one=True)[0]
-
-    return name
-
-
 def qixue_yinyang(renying, pulse):
     with sql.connect(DB_PATH) as conn:
         c = conn.cursor()
@@ -379,236 +523,7 @@ def meridian_yinyang(status):
         return diagnose[0]
 
 
-def parse_action(action, lang):
-    """Takes in an action symbol and returns the name of that symbol in the stated language."""
-    with sql.connect(DB_PATH) as conn:
-        c = conn.cursor()
 
-        c.execute(f'''
-        SELECT {lang} FROM treatment_action
-        WHERE id = "{action}"
-        ''')
-
-        action = c.fetchone()[0]
-
-        return action
-
-
-def parse_state_symbol(state):
-    if state == "+":
-        zh = "實"
-    elif state == "-":
-        zh = "虛"
-    return zh
-
-
-def parse_acupoint(acupoint, lang="zh"):
-    """Takes in the acupoint ID and returns name of the acupoint in the stated language."""
-
-    with sql.connect(DB_PATH) as conn:
-        c = conn.cursor()
-
-        c.execute(f'''
-        SELECT acuName_{lang} FROM Acupoint
-        WHERE id = "{acupoint}"
-        ''')
-
-        action = c.fetchone()[0]
-
-        return action
-
-
-def parse_state(list_of_states, meridian=False, abbrev=False):
-    """A state is given by a tuple, in the form of: (entitiy, state),
-    whereby entity is the id and state is given by a '+' string for excess,
-    and a '-' for deficiency."""
-    parsed = []
-
-    if len(list_of_states) > 1:
-        for item in list_of_states:
-            point_id, state = item
-
-            if meridian:
-                point = id_to_meridian_name(point_id, abbrev=abbrev)
-            else:
-                point = parse_acupoint(point_id)
-
-            state = parse_state_symbol(state)
-            parsed.append((point_id, point, state))
-
-    else:
-        point_id, state = list_of_states[0]
-
-        if meridian:
-            point = id_to_meridian_name(point_id, abbrev=abbrev)
-        else:
-            point = parse_acupoint(point_id)
-
-        state = parse_state(state)
-        parsed.append((point_id, point, state))
-
-    return iter(parsed)
-
-
-def parse_prescription(prescription, lang="zh"):
-    """
-    A valid prescription would be a single tuple in the form of (acupoint_id, action)
-    where 'action' is given by the symbols '++' or '--'.
-    This function would take in a list of such prescriptions
-    and return the human-friendly value in the specified language.
-    :param prescription:
-    :param lang:
-    :return:
-    """
-    parsed = []
-    if len(prescription) > 1:
-        for item in prescription:
-            if item is None:
-                pass
-            else:
-                point_id, action = item
-                point = parse_acupoint(point_id)
-                action = parse_action(action, lang)
-                parsed.append((point_id, point, action))
-
-    else:
-        point_id, action = prescription[0]
-        point = parse_acupoint(point_id)
-        action = parse_action(action, lang)
-        parsed.append((point_id, point, action))
-
-    return iter(parsed)
-
-
-def render_prescription(prescription):
-    """Render parsed prescription as hyperlinked html text."""
-    # rendered = []
-    # for item in prescription:
-    #     if item is not None:
-    #         point_id, point, action = item
-    #         rendered.append(f"""{action}<a href='/query?q={point_id}&category=acupoint'>{point}</a>""")
-    #     else:
-    #         rendered.append(None)
-
-    rendered = [f"""{action}<a href='/query?q={point_id}&category=acupoint'>{point}</a>"""
-                for point_id, point, action in prescription]
-
-    return rendered
-
-
-def phenom_preventive(pathogen, method="mother_son"):
-    """預防六淫，在六經根穴位上應用補母瀉子法。主要作用於經脈的能量上，屬表。"""
-
-    with sql.connect(DB_PATH) as conn:
-        c = conn.cursor()
-
-        # 補以邪氣為屬性的穴位
-        # （經脈屬性幫人預防相關外邪。如太陽經主寒，補經氣可使人禦寒。）
-        # 用根補穴。
-        c.execute(f'''
-        SELECT root_tonify FROM env_phenomena
-        JOIN env_pathogen ON phenomena = pathogen
-        WHERE phenomena = "{pathogen}";
-        ''')
-
-        tonify = (c.fetchone()[0], "++")
-
-        if method == "mother_son":
-
-            # 補母瀉子法，用根瀉穴。
-            # 瀉除對應經脈的經氣可增強人體對抗邪氣的反面能量。
-            c.execute(f'''
-            SELECT root_disperse FROM env_phenomena
-            JOIN env_pathogen ON phenomena = pathogen
-            WHERE phenomena = (SELECT treatment FROM env_pathogen WHERE pathogen = "{pathogen}");
-            ''')
-
-            disperse = (c.fetchone()[0], "--")
-
-            return tonify, disperse
-
-        elif method == "elem":
-
-            # 五行補瀉法，用對應經脈五輸穴（五行）六氣屬性相反的穴位來抵禦邪氣。
-            # 此根據 Sylvie 上課的說法，與課本有出入。
-            c.execute(f'''
-            SELECT `pentashu`.`ID` FROM pentashu
-            JOIN env_pathogen ON phenom_tri = pathogen
-            WHERE phenom_elem = (SELECT elem_treatment FROM env_pathogen WHERE pathogen = "{pathogen}") AND
-            phenom_tri = (SELECT treatment FROM env_pathogen WHERE pathogen = "{pathogen}") AND 
-            meridian_limb = "F";
-            ''')
-
-            disperse = (c.fetchone()[0], "--")
-
-            return tonify, disperse
-
-
-def phenom_treatment(pathogen):
-    """排除外邪，在五輸穴上應用根穴位的五行屬性。主要作用於經脈與臟腑能量的對應關係上，屬裡。"""
-
-    with sql.connect(DB_PATH) as conn:
-        c = conn.cursor()
-
-        # 補對應經脈屬性與病邪相反的五輸穴
-        c.execute(f'''
-        SELECT `pentashu`.`ID` FROM pentashu
-        JOIN env_pathogen ON phenom_tri = pathogen
-        WHERE phenom_elem = (SELECT elem_treatment FROM env_pathogen WHERE pathogen = "{pathogen}") AND
-        phenom_tri = (SELECT treatment FROM env_pathogen WHERE pathogen = "{pathogen}") AND 
-        meridian_limb = "F";
-        ''')
-
-        tonify = (c.fetchone()[0], "++")
-
-        # 瀉邪氣；由經脈屬性與病邪相同的五輸穴來處理
-        c.execute(f'''
-        SELECT `pentashu`.`ID` FROM pentashu
-        JOIN env_pathogen ON phenom_tri = pathogen
-        WHERE phenom_elem = (SELECT elem_treatment FROM env_pathogen WHERE treatment = "{pathogen}") AND
-        phenom_tri = "{pathogen}" AND 
-        meridian_limb = "F";        
-        ''')
-
-        disperse = (c.fetchone()[0], "--")
-
-        # 補回被外邪入侵的經脈的能量；由相關經脈的根補穴來進行
-
-        c.execute(f'''
-        SELECT root_tonify FROM env_phenomena
-        JOIN env_pathogen ON phenomena = pathogen
-        WHERE phenomena = "{pathogen}"; 
-        ''')
-
-        fortify = (c.fetchone()[0], "++")
-
-        return tonify, disperse, fortify
-
-
-def get_root_knot(tri):
-    with sql.connect(DB_PATH) as conn:
-        c = conn.cursor()
-
-        c.execute(f'''
-        SELECT yinyang_tri, yinyang_tri_tr, root_knot FROM env_phenomena
-        WHERE id = "{tri}";
-        ''')
-
-        zh, tr, knot = c.fetchone()
-
-        return zh, tr, (knot, "--")
-
-
-def get_pathogen(tri):
-    with sql.connect(DB_PATH) as conn:
-        c = conn.cursor()
-
-        c.execute(f'''
-        SELECT pathogen FROM env_pathogen
-        WHERE ID = "{tri}"
-        ''')
-
-        return c.fetchone()[0]
 
 
 def get_horary(hour):

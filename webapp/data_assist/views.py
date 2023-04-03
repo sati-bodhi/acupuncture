@@ -2,6 +2,7 @@ from django.shortcuts import render
 from acupuncture.lookup import *
 from acupuncture.element import *
 from acupuncture.extraordinary import *
+from acupuncture.meridian import Phenomena
 from datetime import datetime
 import pytz
 from acupuncture.diagnostics import solartime_by_ip, solartime_by_city, horary_calc
@@ -261,18 +262,18 @@ def eight_principles(request):
 
         diagnosis, treat_qty, treat_qual = qixue_yinyang(renying, pulse)
 
-        points = parse_prescription(treat_qty)
-        qty_prescription += render_prescription(points)
+        points =  parse_prescription(treat_qty)
+        qty_prescription +=  render_prescription(points)
 
-        points = parse_prescription(treat_qual)
-        qual_prescription += render_prescription(points)
+        points =  parse_prescription(treat_qual)
+        qual_prescription +=  render_prescription(points)
 
         if pulse_yinyang:
             meridian_rel_yinyang_lvl = True  # meridian relative yinyang level
             prescription_list = meridian_yinyang(pulse_yinyang)
 
-            points = parse_prescription(prescription_list)
-            meridian_prescription += render_prescription(points)
+            points =  parse_prescription(prescription_list)
+            meridian_prescription +=  render_prescription(points)
 
         return render(request, template_name='data_assist/eight_principles.html',
                       context={
@@ -290,55 +291,49 @@ def eight_principles(request):
 
 def channels(request):
     # 十二正經
+    
     prevent = request.GET.getlist('prevent')
     treat = request.GET.getlist('treat')
     method = request.GET.get('method')
     knot = request.GET.getlist('knot')
 
-    preventive = False
-    expulsive = False
-    connect = False
-    preventive_presp = []  # prescriptions list
-    treatment_presp = []
-    knot_presp = []
+    preventive_prescription = []  # prescriptions list
+    treatment_prescription = []
+    knot_prescription = []
+
+    preventive_logic = None
 
     if prevent:
-        preventive = True
-        preventive_points = []
-        for item in prevent:
-            pathogen = get_pathogen(item)
-            if method == "mother_son":
-                preventive_points.append(phenom_preventive(pathogen))
-            elif method == "elem":
-                preventive_points.append(phenom_preventive(pathogen, method="elem"))
-
-        for i, prescription in enumerate(preventive_points):
-            pathogen_label = "防" + get_pathogen(prevent[i])
-            points = parse_prescription(prescription)
-            preventive_presp.append((pathogen_label, render_prescription(points)))
+        
+        for pathogen in prevent:
+               
+            avert = Phenomena(pathogen)
+            avert.preventive_method = method
+            prescription = avert.phenom_prevent()
+            pathogen_label = "防" + avert.pathogen
+            formula = parse_prescription(prescription)
+            formula = render_prescription(formula)
+            preventive_prescription.append([pathogen_label, zip(formula, avert.logic_prevent)])
 
     if treat:
-        expulsive = True
-        treatment_points = []
-        for item in treat:
-            pathogen = get_pathogen(item)
-            treatment_points.append(phenom_treatment(pathogen))
-
-        for i, prescription in enumerate(treatment_points):
-            pathogen_label = "袪" + get_pathogen(treat[i])
-            points = parse_prescription(prescription)
-            treatment_presp.append((pathogen_label, render_prescription(points)))
+        
+        for pathogen in treat:
+            cure = Phenomena(pathogen)
+            prescription = cure.phenom_treat()
+            pathogen_label = "袪" + cure.pathogen
+            formula = parse_prescription(prescription)
+            formula = render_prescription(formula)
+            treatment_prescription.append((pathogen_label, zip(formula, cure.logic_treat)))
 
     if knot:
-        connect = True
-        knot_points = []
-        for meridian in knot:
-            knot_points.append(get_root_knot(meridian))
+
+        link = Phenomena()
+        knot_points = [link.root_knot(k) for k in knot]
 
         for zh, tr, prescription in knot_points:
             knot_label = "連接" + zh + "經"
             points = parse_prescription([prescription])
-            knot_presp.append((knot_label, render_prescription(points)))
+            knot_prescription.append((knot_label, render_prescription(points)))
 
     if all([not treat, not prevent, not knot]):
         return render(request, template_name='data_assist/channels.html')
@@ -346,12 +341,13 @@ def channels(request):
         return render(request, template_name='data_assist/channels.html',
                       context={
                           "result": True,
-                          "prevent": preventive,
-                          "treat": expulsive,
-                          "knot": connect,
-                          "prescription_preventive": preventive_presp,
-                          "prescription_treatment": treatment_presp,
-                          "prescription_knot": knot_presp,
+                          "prevent": prevent,
+                          "treat": treat,
+                          "knot": knot,
+                          "prescription_preventive": preventive_prescription,
+                          "prescription_treatment": treatment_prescription,
+                          "prescription_knot": knot_prescription,
+                          "logic_preventive": preventive_logic,
                       })
 
 
@@ -430,8 +426,8 @@ def horary(request):
             if prescription[0]:
                 # 子午線(絡脈)
                 luo = prescription[1][0]
-                luo = parse_prescription(luo)
-                luo_rendered = render_prescription(luo)
+                luo =  parse_prescription(luo)
+                luo_rendered =  render_prescription(luo)
 
                 luo_desc = prescription[1][1]
 
@@ -501,11 +497,35 @@ def horary(request):
 
 
 def elements(request):
+    
     # 五行
     organ_energy = request.GET.get("organEnergy")
     mother_energy = request.GET.get("motherEnergy")
     son_energy = request.GET.get("sonEnergy")
     minister_energy = request.GET.get("ministerEnergy")
+
+    def relative_data(mother_status, son_status, minister_status):
+        excess_energy = []
+        deficient_energy = []
+
+        if mother_status == "-":
+            deficient_energy.append("mother")
+        elif mother_status == "+":
+            excess_energy.append("mother")
+
+        if son_status == "-":
+            deficient_energy.append("son")
+        elif son_status == "+":
+            excess_energy.append("son")
+
+        if minister_status == "-":
+            deficient_energy.append("minister")
+        elif minister_status == "+":
+            excess_energy.append("minister")
+
+        return excess_energy, deficient_energy
+
+    excess, deficient = relative_data(mother_energy, son_energy, minister_energy)
 
     sp_energy = request.GET.get("spEnergy")
     treat_sp = request.GET.get("treatSP")
@@ -560,51 +580,30 @@ def elements(request):
                           "graph": graph,
                       })
     else:
-        def relative_data(mother_status, son_status, minister_status):
-            excess_energy = []
-            deficient_energy = []
-
-            if mother_status == "-":
-                deficient_energy.append("mother")
-            elif mother_status == "+":
-                excess_energy.append("mother")
-
-            if son_status == "-":
-                deficient_energy.append("son")
-            elif mother_status == "+":
-                excess_energy.append("son")
-
-            if minister_status == "-":
-                deficient_energy.append("minister")
-            elif mother_status == "+":
-                excess_energy.append("minister")
-
-            return excess_energy, deficient_energy
-
-        excess, deficient = relative_data(mother_energy, son_energy, minister_energy)
 
         p = Pentashu()
         prescribe = a.diagnose(lord_id, organ_energy, excess=excess, deficient=deficient)
 
         treatment = []
-        attrib = []
-        for pr in prescribe:
-            logic = pr[0]
+
+        for logic, formula in prescribe:
+
+            attrib = []
+
             try:
                 comma = logic.index("，")
                 logic = logic[:comma] + "<br>" + logic[comma:]
             except ValueError:
                 pass
 
-            formula = pr[1]
-
+            # TODO: Fix attribute misalignment with Pentashu class.
             for pt, act in formula:
                 attrib.append(p.get_attributes(pt))
 
             formula = parse_prescription(formula)
             formula = render_prescription(formula)
 
-            treatment.append([logic, zip(formula, attrib)])
+            treatment.append([logic, list(zip(formula, attrib))])
 
         return render(request, template_name='data_assist/elements.html',
                       context={
@@ -654,8 +653,8 @@ def mushu(request):
         description = [desc for point, desc in [i for i in formula if i is not None]]
         logic = [i for i in logic if i is not None]
 
-        prescription = parse_prescription(prescription)
-        prescription = render_prescription(prescription)
+        prescription =  parse_prescription(prescription)
+        prescription =  render_prescription(prescription)
 
         treatment = zip(prescription, description, logic)
 
@@ -693,14 +692,14 @@ def extraordinary(request):
 
     ex = Extraordinary()
     meridian_id_list = ex.acting_meridians
-    meridian_name_list = [id_to_meridian_name(m, abbrev=True) for m in meridian_id_list]
+    meridian_name_list = [ex.id_to_meridian_name(m, abbrev=True) for m in meridian_id_list]
     meridian_list = zip(meridian_name_list, meridian_id_list)
 
     if meridian_id:
 
         rel_state = request.GET.get("rel_state") == meridian_id
 
-        meridian_name = id_to_meridian_name(meridian_id, abbrev=True)
+        meridian_name = ex.id_to_meridian_name(meridian_id, abbrev=True)
         relative_states = ex.diagnose_deficiency(meridian_id)
         rel_state_labels = []
         for grp in relative_states:
@@ -708,7 +707,7 @@ def extraordinary(request):
 
         if rel_state:
             prescription = list(ex.treatment())
-            bypass_candidates = parse_prescription(prescription[0], "zh")
+            bypass_candidates =  parse_prescription(prescription[0], "zh")
 
             jiaohuixue_in_use = request.GET.getlist("meeting_pts")
 
@@ -723,11 +722,11 @@ def extraordinary(request):
                 rel_state_labels = [list(label_lst) for label_lst in rel_state_labels]
                 ex_meridian = "".join(rel_state_labels[0][1][1:])
                 target = rel_state_labels[0][1][1] + "－" + rel_state_labels[0][0][1]
-                complement = id_to_meridian_name(ex.paired_ex_meridian, abbrev=True) + "－" + \
-                             id_to_meridian_name(ex.paired_meridian, abbrev=True)
+                complement = ex.id_to_meridian_name(ex.paired_ex_meridian, abbrev=True) + "－" + \
+                             ex.id_to_meridian_name(ex.paired_meridian, abbrev=True)
                 opposite = rel_state_labels[1][1][1] + "－" + rel_state_labels[1][0][1]
-                opposite_complement = id_to_meridian_name(ex.opp_paired_ex_meridian, abbrev=True) + "－" + \
-                                      id_to_meridian_name(ex.opp_paired_meridian, abbrev=True)
+                opposite_complement = ex.id_to_meridian_name(ex.opp_paired_ex_meridian, abbrev=True) + "－" + \
+                                      ex.id_to_meridian_name(ex.opp_paired_meridian, abbrev=True)
 
                 bamai_attrib = [
                     target,

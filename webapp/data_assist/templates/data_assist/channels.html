@@ -19,43 +19,57 @@
 {% block diagnostic_result %}
 
         {% if prevent %}
-            <h2 class="py-3 text-success">預防性</h2>
-        {% for prescription in prescription_preventive %}
-                <h3 class="text-secondary py-3">{{ prescription.0 }}</h3>
-                <ul>
-                {% for point in prescription.1 %}
-                <li>{{ point | safe }}</li>
+        <hr>
+            <h2 class="text-success py-3">預防性</h2>
+        <div class="container col-lg-5 py-3">
+        {% for goal, prescription in prescription_preventive %}
+                <h3 class="text-danger py-3">{{ goal }}</h3>
+                <div class="row">
+                {% for point, logic in prescription %}
+                    <ul>
+                        <h4 class="py-2 text-info">{{ logic | safe }}</h4>
+                        <li>{{ point | safe }}</li>
+                    </ul>
                 {% endfor %}
-                </ul>
-
+                </div>
         {% endfor %}
+        </div>
         {% endif %}
 
         {% if treat %}
-            <h2 class="py-3 text-success">袪六淫</h2>
-        {% for prescription in prescription_treatment %}
-                <h3 class="text-secondary py-3">{{ prescription.0 }}</h3>
-                <ul>
-                {% for point in prescription.1 %}
-                <li>{{ point | safe }}</li>
+        <hr>
+        <h2 class="text-success py-3">袪六淫</h2>
+        <div class="container col-lg-5 py-3">
+        {% for goal, prescription in prescription_treatment %}
+                <h3 class="text-danger py-3">{{ goal }}</h3>
+                <div class="row">
+                {% for point, logic in prescription %}
+                    <ul>
+                        <h4 class="py-2 text-info">{{ logic | safe }}</h4>
+                        <li>{{ point | safe }}</li>
+                    </ul>
                 {% endfor %}
-                </ul>
-
+                </div>
         {% endfor %}
+        </div>
         {% endif %}
 
 
         {% if knot %}
-            <h2 class="py-3 text-success">根結穴</h2>
+        <hr>
+        <h2 class="text-success py-3">根結穴</h2>
+        <div class="container col-lg-5 py-3">
         {% for prescription in prescription_knot %}
-                <h3 class="text-secondary py-3">{{ prescription.0 }}</h3>
+            <h3 class="text-danger py-3">{{ prescription.0 }}</h3>
+            <div class="row">
                 <ul>
                 {% for point in prescription.1 %}
                 <li>{{ point | safe }}</li>
                 {% endfor %}
                 </ul>
-
+            </div>
         {% endfor %}
+        </div>
         {% endif %}
 
 {% endblock %}
