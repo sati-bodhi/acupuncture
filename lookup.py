@@ -77,7 +77,7 @@ def parse_acupoint(acupoint, lang="zh"):
         return action
 
 
-def parse_state(self, list_of_states, meridian=False, abbrev=False):
+def parse_state(list_of_states, meridian=False, abbrev=False):
     """A state is given by a tuple, in the form of: (entitiy, state),
     whereby entity is the id and state is given by a '+' string for excess,
     and a '-' for deficiency."""
@@ -90,9 +90,9 @@ def parse_state(self, list_of_states, meridian=False, abbrev=False):
             if meridian:
                 point = id_to_meridian_name(point_id, abbrev=abbrev)
             else:
-                point = self.parse_acupoint(point_id)
+                point = parse_acupoint(point_id)
 
-            state = self.parse_state_symbol(state)
+            state = parse_state_symbol(state)
             parsed.append((point_id, point, state))
 
     else:
@@ -101,9 +101,9 @@ def parse_state(self, list_of_states, meridian=False, abbrev=False):
         if meridian:
             point = id_to_meridian_name(point_id, abbrev=abbrev)
         else:
-            point = self.parse_acupoint(point_id)
+            point = parse_acupoint(point_id)
 
-        state = self.parse_state(state)
+        state = parse_state(state)
         parsed.append((point_id, point, state))
 
     return iter(parsed)

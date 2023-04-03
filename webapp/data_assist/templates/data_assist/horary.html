@@ -10,10 +10,54 @@
     {% include 'data_assist/include/horary_info.html' %}
     {% include 'data_assist/include/jetlag_form.html' %}
 
+    {% if city_selected %}
+        {% include 'data_assist/include/horary_info_departure.html' %}
+    {% endif %}
+
     <div class="col py-3">
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>
 </form>
+
+{% endblock %}
+
+
+{% block diagnostic_result %}
+
+    {% if luo %}
+    <h2 class="py-3 text-success">子午線，調絡脈</h2>
+    <div class="container col-lg-6 py-3">
+        <h3 class="text-secondary py-3">{{ luo_desc.1 }}經 → {{ luo_desc.0 }}經</h3>
+        <div class="row py-3">
+            <ul>
+            {% for point in luo %}
+            <li>{{ point | safe }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if transfer %}
+    <h2 class="py-3 text-success">循經，調出入穴</h2>
+
+
+    <div class="container col-lg-6 py-3">
+    {% for set in transfer %}
+        <div class="row py-3">
+            <h3 class="text-secondary py-3">{{ set.0.1 }} → {{ set.0.0 }}</h3>
+            <ul>
+        {% for point in set.1 %}
+            <li>{{ point | safe }}</li>
+        {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+    </div>
+    {% endif %}
+
+{% endblock %}
+
 
 <script>
 async function showData(){
@@ -40,34 +84,3 @@ console.log(url + "?city=" + departCity)
 }
 
 </script>
-{% endblock %}
-
-
-{% block diagnostic_result %}
-
-    {% if luo %}
-    <h2 class="py-3 text-success">子午線，調絡脈</h2>
-    <h3 class="text-secondary py-3">{{ luo_desc.1 }}經 → {{ luo_desc.0 }}經</h3>
-
-    <ul>
-    {% for point in luo %}
-    <li>{{ point | safe }}</li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-
-    {% if transfer %}
-    <h2 class="py-3 text-success">循經，調出入穴</h2>
-
-    <ul>
-    {% for set in transfer %}
-    <h3 class="text-secondary py-3">{{ set.0.1 }} → {{ set.0.0 }}</h3>
-        {% for point in set.1 %}
-            <li>{{ point | safe }}</li>
-        {% endfor %}
-    {% endfor %}
-    </ul>
-
-    {% endif %}
-
-{% endblock %}

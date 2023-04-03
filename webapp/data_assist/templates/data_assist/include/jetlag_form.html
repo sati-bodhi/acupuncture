@@ -8,12 +8,17 @@
 {% block fieldset_content %}
 <div class="container">
 <div class="row justify-content-center">
-    <div class="form-group col">
+    <div class="form-group col-lg-8">
         <h2 class="text-secondary py-3">出發地</h2>
-        <label for="cityId">城市：</label>
-        <select name="city" class="form-select form-select-lg py-1" id="cityId" onchange="showData()" autocomplete="off">
 
-            <option value="" selected="selected"></option>
+        <select name="city" class="form-select form-select-lg py-1" id="cityId" autocomplete="off">
+
+            {% if city_selected %}
+            <option value="{{ city_selected }}" selected>{{ city_selected }}（{{ city_selected_zh }}）</option>
+            {% else %}
+            <option value="" selected></option>
+            {% endif %}
+
             {% for city, zh_city in cities_zh %}
             <option value="{{ city }}">{{ city }}（{{ zh_city }}）</option>
             {% endfor %}

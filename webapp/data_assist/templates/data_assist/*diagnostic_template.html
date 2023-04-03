@@ -1,0 +1,37 @@
+{% extends 'data_assist/diagnose.html' %}
+
+{% block diagnostic_title %}
+
+{% endblock %}
+
+
+{% block diagnostic_form %}
+<form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'channels' %}">
+    {% csrf_token %}
+    {% include 'data_assist/include/*fieldset_template.html' %}
+
+    <div class="col py-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block diagnostic_result %}
+<h2 class="text-success py-3"></h2>
+
+<div class="container col-lg-5 py-3">
+{% for goal, formula in prescription %}
+        <h3 class="text-danger py-3">{{ goal }}</h3>
+        <div class="row">
+        {% for point, logic in formula %}
+            <ul>
+                <h4 class="py-2 text-info">{{ logic | safe }}</h4>
+                <li>{{ point | safe }}</li>
+            </ul>
+        {% endfor %}
+        </div>
+{% endfor %}
+</div>
+
+{% endblock %}

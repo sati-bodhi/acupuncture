@@ -12,8 +12,8 @@ urlpatterns=[
     path('diagnose/elements/acute', views.elements, name='elem-acute'),
     path('diagnose/elements/chronic', views.mushu, name='elem-chronic'),
     path('diagnose/extraordinary', views.extraordinary, name='extraordinary'),
-    path('diagnose/jingjin', views.extraordinary, name='jingjin'),
-    path('diagnose/jingbie', views.extraordinary, name='jingbie'),
-    path('diagnose/luo', views.extraordinary, name='luo'),
-    path('diagnose/group_luo', views.extraordinary, name='group_luo'),
+    path('diagnose/jingjin', views.jingjin, name='jingjin'),
+    path('diagnose/jingbie', views.jingbie, name='jingbie'),
+    path('diagnose/luo', views.luo, name='luo'),
+    path('diagnose/group_luo', views.group_luo, name='group_luo'),
 ]

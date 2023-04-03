@@ -1,9 +1,12 @@
-<h3>交會腧穴</h3>
-
-<ol class="fs-5">
-    {% for point in table_data %}
-    <li>
-        <a href="{% url 'query' %}?q={{ point.0.0 }}&category=acupoint">{{ point.0.0 }} {{ point.0.1 }}</a>
-    </li>
-    {% endfor %}
-</ol>
+<div class="row py-3 justify-content-center">
+    <h3 class="py-3">交會腧穴</h3>
+    <div class="col-lg-5">
+    <ol class="fs-5">
+        {% for point in table_data %}
+        <li>
+            <a href="{% url 'query' %}?q={{ point.0.0 }}&category=acupoint">{{ point.0.0 }} {{ point.0.1 }}</a>
+        </li>
+        {% endfor %}
+    </ol>
+    </div>
+</div>

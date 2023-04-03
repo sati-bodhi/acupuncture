@@ -390,7 +390,7 @@ def horary(request):
                  '蒂華納', '東京', '多倫多', '都靈', '烏得勒支', '溫哥華', '維也納', '華沙', '華盛頓', '惠靈頓',
                  '蘇黎世']
 
-    cities_zh = zip(cities, cities_zh)
+    cities_zh_labels = zip(cities, cities_zh)
 
     solartime, timezone = solartime_by_ip()
 
@@ -419,15 +419,16 @@ def horary(request):
         transfer_rendered = None
         luo_desc = None
         transfer_desc = None
-        result = None
+
+        depart_info_noted = request.GET.get('depart_info_noted')
 
         if prescription:
-            result = True
+
             if prescription[0]:
                 # 子午線(絡脈)
                 luo = prescription[1][0]
-                luo =  parse_prescription(luo)
-                luo_rendered =  render_prescription(luo)
+                luo = parse_prescription(luo)
+                luo_rendered = render_prescription(luo)
 
                 luo_desc = prescription[1][1]
 
@@ -437,50 +438,95 @@ def horary(request):
                     transfer_rendered = [render_prescription(presc) for presc in transfer]
 
                     transfer_desc = prescription[2][1]
+
             else:
+
                 transfer = prescription[1][0]
                 transfer = [parse_prescription(pair) for pair in transfer]
                 transfer_rendered = [render_prescription(presc) for presc in transfer]
 
                 transfer_desc = prescription[1][1]
 
-        if is_ajax(request):
-            return render(request, template_name='data_assist/include/jetlag_form_result.html',
+            if depart_info_noted:
+                if depart_info_noted != city:
+                    return render(request, template_name='data_assist/horary.html',
+                                  context={
+                                      "city_selected": city,
+                                      "city_selected_zh": cities_zh[cities.index(city)],
+                                      "depart_time": dt_depart.strftime("%x  %X"),
+                                      "depart_timezone": depart_tz,
+                                      "depart_solar_time": str(depart_solar),
+                                      "depart_hour": depart_hr_name,
+                                      "depart_meridian": depart_hr_meridian,
+                                      "local_time": dt_aware.strftime("%x  %X"),
+                                      "local_timezone": timezone,
+                                      "local_solar_time": str(solartime),
+                                      "local_hour": hr_name,
+                                      "local_meridian": hr_meridian,
+                                      "cities": cities,
+                                      "cities_zh": cities_zh_labels,
+                                  })
+                else:
+                    return render(request, template_name='data_assist/horary.html',
+                                  context={
+                                      "result": True,
+                                      "depart": True,
+                                      "city_selected": city,
+                                      "city_selected_zh": cities_zh[cities.index(city)],
+                                      "depart_time": dt_depart.strftime("%x  %X"),
+                                      "depart_timezone": depart_tz,
+                                      "depart_solar_time": str(depart_solar),
+                                      "depart_hour": depart_hr_name,
+                                      "depart_meridian": depart_hr_meridian,
+                                      "local_time": dt_aware.strftime("%x  %X"),
+                                      "local_timezone": timezone,
+                                      "local_solar_time": str(solartime),
+                                      "local_hour": hr_name,
+                                      "local_meridian": hr_meridian,
+                                      "cities": cities,
+                                      "cities_zh": cities_zh_labels,
+                                      "luo": luo_rendered,
+                                      "luo_desc": luo_desc,
+                                      "transfer": list(zip(transfer_desc, transfer_rendered)),
+                                  })
+
+            else:
+                return render(request, template_name='data_assist/horary.html',
+                              context={
+                                  "depart": True,
+                                  "city_selected": city,
+                                  "city_selected_zh": cities_zh[cities.index(city)],
+                                  "local_time": dt_aware.strftime("%x  %X"),
+                                  "local_timezone": timezone,
+                                  "local_solar_time": str(solartime),
+                                  "local_hour": hr_name,
+                                  "local_meridian": hr_meridian,
+                                  "depart_time": dt_depart.strftime("%x  %X"),
+                                  "depart_timezone": depart_tz,
+                                  "depart_solar_time": str(depart_solar),
+                                  "depart_hour": depart_hr_name,
+                                  "depart_meridian": depart_hr_meridian,
+                                  "cities": cities,
+                                  "cities_zh": cities_zh_labels,
+                              })
+
+        else:
+            return render(request, template_name='data_assist/horary.html',
                           context={
-                              "result": result,
-                              "depart": True,
+                              "city_selected": city,
+                              "city_selected_zh": cities_zh[cities.index(city)],
                               "depart_time": dt_depart.strftime("%x  %X"),
                               "depart_timezone": depart_tz,
                               "depart_solar_time": str(depart_solar),
                               "depart_hour": depart_hr_name,
                               "depart_meridian": depart_hr_meridian,
-                              "cities": cities,
-                              "cities_zh": cities_zh,
-                              "luo": luo_rendered,
-                              "luo_desc": luo_desc,
-                              "transfer": list(zip(transfer_desc, transfer_rendered)),
-                          })
-
-        else:
-            return render(request, template_name='data_assist/horary.html',
-                          context={
-                              "result": result,
                               "local_time": dt_aware.strftime("%x  %X"),
                               "local_timezone": timezone,
                               "local_solar_time": str(solartime),
                               "local_hour": hr_name,
                               "local_meridian": hr_meridian,
-                              "depart": True,
-                              "depart_time": dt_depart.strftime("%x  %X"),
-                              "depart_timezone": depart_tz,
-                              "depart_solar_time": str(depart_solar),
-                              "depart_hour": depart_hr_name,
-                              "depart_meridian": depart_hr_meridian,
                               "cities": cities,
-                              "cities_zh": cities_zh,
-                              "luo": luo_rendered,
-                              "luo_desc": luo_desc,
-                              "transfer": list(zip(transfer_desc, transfer_rendered)),
+                              "cities_zh": cities_zh_labels,
                           })
 
     else:
@@ -492,7 +538,7 @@ def horary(request):
                           "local_hour": hr_name,
                           "local_meridian": hr_meridian,
                           "cities": cities,
-                          "cities_zh": cities_zh,
+                          "cities_zh": cities_zh_labels,
                       })
 
 
@@ -596,7 +642,6 @@ def elements(request):
             except ValueError:
                 pass
 
-            # TODO: Fix attribute misalignment with Pentashu class.
             for pt, act in formula:
                 attrib.append(p.get_attributes(pt))
 
