@@ -6,7 +6,7 @@
 
 
 {% block diagnostic_form %}
-<form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'channels' %}">
+<form class="p-3 m-3 fs-4"  method="GET"  action="{% url '' %}">
     {% csrf_token %}
     {% include 'data_assist/include/*fieldset_template.html' %}
 

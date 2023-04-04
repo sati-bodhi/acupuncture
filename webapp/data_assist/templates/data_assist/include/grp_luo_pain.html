@@ -1,0 +1,81 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+疼痛部位
+{% endblock %}
+
+{% block fieldset_content %}
+
+<h2 class="text-secondary pt-2">上下</h2>
+
+<div class="col-lg-8 py-3">
+
+    <div class="form-group row justify-content-center">
+        <div class="form-check col">
+            <input class="form-check-input" type="radio" name="top_bottom" id="t" value="t">
+            <label class="form-check-label" for="t">
+            上半身
+            </label>
+        </div>
+        <div class="form-check col">
+            <input class="form-check-input" type="radio" name="top_bottom" id="b" value="b">
+            <label class="form-check-label" for="r">
+            下半身
+            </label>
+        </div>
+    </div>
+
+</div>
+
+<hr>
+
+<h2 class="text-secondary pt-2">左右</h2>
+
+<div class="col-lg-8 py-3">
+
+    <div class="form-group row justify-content-center">
+
+        <div class="form-check col">
+            <input class="form-check-input" type="radio" name="left_right" id="l" value="l">
+            <label class="form-check-label" for="l">
+            左側
+            </label>
+        </div>
+        <div class="form-check col">
+            <input class="form-check-input" type="radio" name="left_right" id="r" value="r">
+            <label class="form-check-label" for="r">
+            右側
+            </label>
+        </div>
+
+    </div>
+
+</div>
+
+<hr>
+
+<h2 class="text-secondary pt-2">陰陽</h2>
+
+<div class="col-lg-8 py-3">
+
+    <div class="form-group row justify-content-center">
+
+        <div class="form-check col">
+            <input class="form-check-input" type="radio" name="yinyang" id="yin" value=0>
+            <label class="form-check-label" for="yin">
+            陰痛
+            </label>
+        </div>
+        <div class="form-check col">
+            <input class="form-check-input" type="radio" name="yinyang" id="yang" value=1>
+            <label class="form-check-label" for="yang">
+            陽痛
+            </label>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

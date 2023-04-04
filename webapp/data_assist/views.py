@@ -2,6 +2,7 @@ from django.shortcuts import render
 from acupuncture.lookup import *
 from acupuncture.element import *
 from acupuncture.extraordinary import *
+from acupuncture.complement import *
 from acupuncture.meridian import Phenomena
 from datetime import datetime
 import pytz
@@ -746,13 +747,14 @@ def extraordinary(request):
 
         meridian_name = ex.id_to_meridian_name(meridian_id, abbrev=True)
         relative_states = ex.diagnose_deficiency(meridian_id)
+
         rel_state_labels = []
         for grp in relative_states:
             rel_state_labels.append(parse_state(grp, meridian=True, abbrev=True))
 
         if rel_state:
             prescription = list(ex.treatment())
-            bypass_candidates =  parse_prescription(prescription[0], "zh")
+            bypass_candidates = parse_prescription(prescription[0], "zh")
 
             jiaohuixue_in_use = request.GET.getlist("meeting_pts")
 
@@ -841,7 +843,101 @@ def luo(request):
 
 
 def group_luo(request):
-    return render(request, template_name='data_assist/group_luo.html')
+
+    category = request.GET.get("category")
+
+    if category:
+
+        lbl_category = "疼痛" if category == "pain" else "半身不遂"
+
+        if category == "pain":
+
+            left_right = request.GET.get("left_right")
+            top_bottom = request.GET.get("top_bottom")
+            yinyang = int(request.GET.get("yinyang")) if request.GET.get("yinyang") else None
+
+            lbl_left_right = "左側" if left_right == "l" else "右側" if left_right == "r" else None
+            lbl_top_bottom = "上半身" if top_bottom == "t" else "下半身" if top_bottom == "b" else None
+            lbl_yinyang = "陰痛" if yinyang == 0 else "陽痛" if yinyang == 1 else None
+
+            if all([left_right, top_bottom, lbl_yinyang]):
+
+                gl = GroupLuo(left_right, top_bottom, yinyang)
+                prescribe = gl.pain()
+
+                prescription = [p for p, pos in prescribe]
+                position = [pos for p, pos in prescribe]
+                position_labels = ["左側" if pos == "l" else "右側" for pos in position]
+
+                prescription = parse_prescription(prescription)
+                prescription = render_prescription(prescription)
+
+                treatment = zip(position_labels, prescription)
+
+                return render(request, template_name='data_assist/group_luo.html',
+                              context={
+                                  "result": True,
+                                  "category": category,
+                                  "category_lbl": lbl_category,
+                                  "ailment_lbl": lbl_top_bottom + lbl_left_right + lbl_yinyang,
+                                  "prescription": treatment,
+                              })
+
+            else:
+
+                return render(request, template_name='data_assist/group_luo.html',
+                              context={
+                                  "category": category,
+                                  "category_lbl": lbl_category,
+                              })
+
+        elif category == "hemiplegia":
+
+            left_right = request.GET.get("left_right")
+            yinyang = request.GET.get("yinyang")
+
+            lbl_left_right = "左側" if left_right == "l" else "右側" if left_right == "r" else None
+            lbl_yinyang = "鬆弛無力型" if yinyang == "atonic" else "攣縮型" if yinyang == "spastic" else None
+
+            if all([left_right, yinyang]):
+
+                gl = GroupLuo(left_right, nature=yinyang, hemiplegia=True)
+                prescribe = gl.hemiplegia()
+
+                prescription = [p for p, pos in prescribe]
+                position = [pos for p, pos in prescribe]
+                position_labels = ["左側" if pos == "l" else "右側" for pos in position]
+
+                prescription = parse_prescription(prescription)
+                prescription = render_prescription(prescription)
+
+                treatment = zip(position_labels, prescription)
+
+                return render(request, template_name='data_assist/group_luo.html',
+                              context={
+                                  "result": True,
+                                  "category": category,
+                                  "category_lbl": lbl_category,
+                                  "ailment_lbl": lbl_left_right + lbl_yinyang + "<br>" + lbl_category,
+                                  "prescription": treatment,
+                              })
+            else:
+                return render(request, template_name='data_assist/group_luo.html',
+                              context={
+                                  "category": category,
+                                  "category_lbl": lbl_category,
+                              })
+
+        else:
+
+            return render(request, template_name='data_assist/group_luo.html',
+                          context={
+                              "category": category,
+                              "category_lbl": lbl_category,
+                          })
+
+    else:
+        return render(request, template_name='data_assist/group_luo.html')
 
 
 if __name__ == '__main__':

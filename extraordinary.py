@@ -164,6 +164,7 @@ class Extraordinary(Meridian, Calc):
         db = Database()
         db.df_to_sql(df, "acuEx")
 
+# TODO: Extend relative states to include adjacent and adjacent-opposite energy levels.
     def relative_energies(self, meridian, state):
 
         i = None

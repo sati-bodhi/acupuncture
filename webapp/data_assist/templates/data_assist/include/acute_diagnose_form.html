@@ -6,7 +6,9 @@
 {% endblock %}
 
 {% block fieldset_content %}
+<div class="container col-lg-10">
 {% if earth_energy %}
+
 <legend class="form-label py-4"><h2>脾－胃能量</h2></legend>
 <div class="container row py-3">
     <div class="form-check col py-sm-2">
@@ -27,6 +29,7 @@
     </div>
 </div>
 <hr>
+
 {% endif %}
 
 <legend class="form-label py-4"><h2>{{ lord }}能量</h2></legend>
@@ -93,5 +96,7 @@
         實
       </label>
     </div>
+</div>
+
 </div>
 {% endblock %}
