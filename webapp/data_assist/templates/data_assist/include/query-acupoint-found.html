@@ -12,6 +12,11 @@
     <dt class="col-sm-3">經絡：</dt>
     <dd class="col-sm-9"><a href="{% url 'query' %}?q={{ meridian_id }}&category=meridian">{{ meridian }}</a></dd>
 
+    {% if luo %}
+    <dt class="col-sm-3">絡穴：</dt>
+    <dd class="col-sm-9">{{ luo }}</dd>
+    {% endif %}
+
     {% if entry_exit %}
     <dt class="col-sm-3">出入穴：</dt>
     <dd class="col-sm-9">{{ entry_exit }}</dd>
@@ -23,6 +28,13 @@
         {% for extra_id, vessel in extra %}
             <a href="/query?q={{ extra_id }}&category=meridian">{{ vessel }}</a>
         {% endfor %}
+        </dd>
+    {% endif %}
+
+    {% if master %}
+        <dt class="col-sm-3">八脈交會穴：</dt>
+        <dd class="col-sm-9">
+            <a href="{% url 'query' %}?q={{ master.0 }}&category=meridian">{{ master.1 }}</a>
         </dd>
     {% endif %}
 

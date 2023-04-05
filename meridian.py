@@ -22,7 +22,10 @@ class Meridian(Calc):
     ELEM = ("木", "火", "土", "金", "水")
 
     def __init__(self):
-        pass
+
+        super().__init__()
+        self.yin = [yin for yang, yin in self.SUP_PROFOUND]
+        self.yang = [yang for yang, yin in self.SUP_PROFOUND]
 
     @staticmethod
     def meridian_of(acupoint):

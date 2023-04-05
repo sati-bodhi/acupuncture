@@ -41,7 +41,14 @@
         <h2 class="text-success py-3">袪六淫</h2>
         <div class="container col-lg-5 py-3">
         {% for goal, prescription in prescription_treatment %}
-                <h3 class="text-danger py-3">{{ goal }}</h3>
+            <header class="py-3">
+                <h3 class="text-danger">{{ goal }}</h3>
+                {% if goal == "袪風" %}
+                    <p>
+                        <small>* <em>用<a href="/diagnose/extraordinary?target_meridian=TE">陽維脈</a></em></small>
+                    </p>
+                {% endif %}
+            </header>
                 <div class="row">
                 {% for point, logic in prescription %}
                     <ul>

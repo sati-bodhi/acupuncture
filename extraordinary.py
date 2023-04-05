@@ -90,18 +90,11 @@ class Extraordinary(Meridian, Calc):
         "BV": "GB41",
     }
 
-    def __init__(self):
+    def __init__(self, meridian=None):
 
         super().__init__()
-        self.meridian = None
-        self.ex_meridian = None
-        self.paired_meridian = None
-        self.paired_ex_meridian = None
 
-        self.opp_meridian = None
-        self.opp_ex_meridian = None
-        self.opp_paired_meridian = None
-        self.opp_paired_ex_meridian = None
+        # Derivatives
 
         self.bypass = {
             "TV": self.TV,
@@ -119,11 +112,41 @@ class Extraordinary(Meridian, Calc):
         self.acting_meridians = [self.meridian_of(point)  # not all meridians are involved.
                                  for point in list(self.MASTER_PTS.values())]
 
+        self.meridian_labels = self.labels()
+
         self.pt_opposites = [(self.MASTER_PTS[yin], self.MASTER_PTS[yang]) for yin, yang in self.OPPOSITES]
         self.meridian_opposites = [(self.meridian_of(yin), self.meridian_of(yang)) for yin, yang in self.pt_opposites]
 
         self.pt_pairs = [(self.MASTER_PTS[a], self.MASTER_PTS[b]) for a, b in self.PAIRS]
         self.meridian_pairs = [(self.meridian_of(a), self.meridian_of(b)) for a, b in self.pt_pairs]
+
+        if meridian:
+
+            # Initialized Values
+
+            self.meridian = meridian
+            self.meridian_state = (meridian, "-")
+
+            self.ex_meridian = self.meridian_to_ex[self.meridian]
+            self.ex_meridian_state = (self.ex_meridian, "+")
+
+            self.paired_meridian = self.get_paired_meridian(self.meridian)
+            self.paired_meridian_state = (self.paired_meridian, "-")
+
+            self.paired_ex_meridian = self.meridian_to_ex[self.paired_meridian]
+            self.paired_ex_meridian_state = (self.paired_ex_meridian, "+")
+
+            self.opp_meridian = self.get_paired_elem_from_list(meridian, self.meridian_opposites)
+            self.opp_meridian_state = (self.opp_meridian, "+")
+
+            self.opp_ex_meridian = self.meridian_to_ex[self.opp_meridian]
+            self.opp_ex_meridian_state = (self.opp_ex_meridian, "-")
+
+            self.opp_paired_meridian = self.get_paired_meridian(self.opp_meridian)
+            self.opp_paired_meridian_state = (self.opp_paired_meridian, "+")
+
+            self.opp_paired_ex_meridian = self.meridian_to_ex[self.opp_paired_meridian]
+            self.opp_paired_ex_meridian_state = (self.opp_paired_ex_meridian, "-")
 
     @staticmethod
     def generate_accompany_data(ex_lst, ex_meridian):
@@ -155,6 +178,14 @@ class Extraordinary(Meridian, Calc):
 
         return df_dict
 
+    def is_master_point(self, acupoint):
+        if acupoint in self.MASTER_PTS.values():
+            idx = list(self.MASTER_PTS.values()).index(acupoint)
+            vessel = list(self.MASTER_PTS.keys())[idx]
+
+            return vessel
+
+
     def rebuild_ex_db(self):
 
         df_dict = self.ex_df_dict()
@@ -164,68 +195,62 @@ class Extraordinary(Meridian, Calc):
         db = Database()
         db.df_to_sql(df, "acuEx")
 
+    def labels(self):
+        meridian_id_list = self.acting_meridians
+        meridian_name_list = [self.id_to_meridian_name(m, abbrev=True) for m in meridian_id_list]
+        self.meridian_labels = zip(meridian_name_list, meridian_id_list)
+        return self.meridian_labels
+
 # TODO: Extend relative states to include adjacent and adjacent-opposite energy levels.
-    def relative_energies(self, meridian, state):
 
-        i = None
-        j = None
-        opp_meridian = None
+#     def relative_energies(self, meridian, state):
+#
+#         opp_meridian = None
+#
+#         if meridian in self.acting_meridians:  # is ordinary vessel with a master point
+#             opp_meridian = self.get_paired_elem_from_list(meridian, self.meridian_opposites)
+#
+#         elif meridian in list(self.MASTER_PTS.keys()):  # is extraordinary vessel
+#             opp_meridian = self.get_paired_elem_from_list(meridian, self.OPPOSITES)
+#
+#         if opp_meridian:
+#             if state == "-":
+#                 return opp_meridian, "+"
+#
+#             elif state == "+":
+#                 return opp_meridian, "-"
 
+    def get_paired_meridian(self, meridian):
         if meridian in self.acting_meridians:  # is ordinary vessel with a master point
-            opp_meridian = self.get_paired_elem_from_list(meridian, self.meridian_opposites)
+            paired = self.get_paired_elem_from_list(meridian, self.meridian_pairs)
 
         elif meridian in list(self.MASTER_PTS.keys()):  # is extraordinary vessel
-            opp_meridian = self.get_paired_elem_from_list(meridian, self.OPPOSITES)
+            paired = self.get_paired_elem_from_list(meridian, self.PAIRS)
 
-        if opp_meridian:
-            if state == "-":
-                return opp_meridian, "+"
+        return paired
 
-            elif state == "+":
-                return opp_meridian, "-"
-
-    def meridian_to_ex_meridian_energy(self, meridian, state="-"):
-
-        i, j = self.elem_index_in_list_of_tuples(meridian, self.meridian_opposites)
-        ex_meridian = self.OPPOSITES[i][j]
-        if state == "-":
-            return ex_meridian, "+"
-        elif state == "+":
-            return ex_meridian, "-"
-
-    def diagnose_deficiency(self, meridian):
+    def diagnose_deficiency(self):
         """Assume deficiency because extraordinary meridian pathologies
         are always due to excess."""
-        self.meridian = (meridian, "-")
-        self.ex_meridian = self.meridian_to_ex_meridian_energy(meridian, "-")
-
-        self.opp_meridian = self.relative_energies(meridian, "-")
-        self.opp_ex_meridian = self.relative_energies(*self.ex_meridian)
-
-        self.paired_meridian = self.get_paired_elem_from_list(meridian, self.meridian_pairs)
-        self.paired_ex_meridian = self.meridian_to_ex[self.paired_meridian]
-
-        self.opp_paired_meridian = self.get_paired_elem_from_list(self.opp_meridian[0], self.meridian_pairs)
-        self.opp_paired_ex_meridian = self.meridian_to_ex[self.opp_paired_meridian]
-
-        return [(self.meridian, self.ex_meridian),
-                (self.opp_meridian, self.opp_ex_meridian)]
+        return [(self.meridian_state, self.ex_meridian_state),
+                (self.opp_meridian_state, self.opp_ex_meridian_state),
+                (self.paired_meridian_state, self.paired_ex_meridian_state),
+                (self.opp_paired_meridian_state, self.opp_paired_ex_meridian_state)]
 
     def treatment(self):
-        ex_meridian = self.ex_meridian[0]
-        opp_ex_meridian = self.opp_ex_meridian[0]
-        bypass = self.bypass[ex_meridian]
 
-        if ex_meridian in ["CV", "GV"]:
+        bypass = self.bypass[self.ex_meridian]
+
+        if self.ex_meridian in ["CV", "GV"]:
             jiaohuixue = [(pt, "++") for pt in bypass]
         else:
             jiaohuixue = [(pt, "--") for pt in bypass]
 
-        target = (self.MASTER_PTS[ex_meridian], "++")
-        complement_vessel = self.get_paired_elem_from_list(ex_meridian, self.PAIRS)
+        target = (self.MASTER_PTS[self.ex_meridian], "++")
+        complement_vessel = self.get_paired_elem_from_list(self.ex_meridian, self.PAIRS)
         complement = (self.MASTER_PTS[complement_vessel], "++")
-        opposite = (self.MASTER_PTS[opp_ex_meridian], "--")
-        opposite_complement_vessel = self.get_paired_elem_from_list(opp_ex_meridian, self.PAIRS)
+        opposite = (self.MASTER_PTS[self.opp_ex_meridian], "--")
+        opposite_complement_vessel = self.get_paired_elem_from_list(self.opp_ex_meridian, self.PAIRS)
         opposite_complement = (self.MASTER_PTS[opposite_complement_vessel], "--")
 
         return jiaohuixue, [target, complement, opposite, opposite_complement]

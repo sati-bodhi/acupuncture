@@ -62,6 +62,12 @@ def query(request):
             pentashu = get_pentashu_label(acu_id)
             mu_shu = get_mu_shu_label(acu_id)
             extra = get_extra_id(acu_id)
+
+            ex = Extraordinary()
+            master_id = ex.is_master_point(acu_id)
+            master = id_to_meridian_name(master_id, abbrev=True) if master_id else None
+            master = (master_id, master) if master_id else None
+
             tonify_meridian = get_meridian_treatment_pt(acu_id, "++")
             disperse_meridian = get_meridian_treatment_pt(acu_id, "--")
             if tonify_meridian:
@@ -69,6 +75,10 @@ def query(request):
             elif disperse_meridian:
                 meridian_treatment_label = disperse_meridian + "瀉穴"
             entry_exit = get_entry_exit_pt(acu_id)
+
+            luo = Luo()
+            luo = luo.is_luo_point(acu_id)
+
             found = True
             loc = get_location(acu_id)  # string describing location of acupoint
             loc = add_href(loc)
@@ -87,6 +97,8 @@ def query(request):
                               "pentashu": pentashu,
                               "mushu": mu_shu,
                               "extra": extra,
+                              "master": master,
+                              "luo": luo,
                               "treat_meridian": meridian_treatment_label,
                               "entry_exit": entry_exit,
                           })
@@ -737,16 +749,18 @@ def extraordinary(request):
     meridian_id = request.GET.get("target_meridian")
 
     ex = Extraordinary()
-    meridian_id_list = ex.acting_meridians
-    meridian_name_list = [ex.id_to_meridian_name(m, abbrev=True) for m in meridian_id_list]
-    meridian_list = zip(meridian_name_list, meridian_id_list)
+    meridian_list = ex.labels()
 
     if meridian_id:
+
+        ex = Extraordinary(meridian_id)
+
 
         rel_state = request.GET.get("rel_state") == meridian_id
 
         meridian_name = ex.id_to_meridian_name(meridian_id, abbrev=True)
-        relative_states = ex.diagnose_deficiency(meridian_id)
+
+        relative_states = ex.diagnose_deficiency()
 
         rel_state_labels = []
         for grp in relative_states:
@@ -805,8 +819,7 @@ def extraordinary(request):
                                   "rel_state": True,
                                   "meridian": True,
                                   "meridian_id": meridian_id,
-                                  "meridian_name": meridian_name,
-                                  "meridian_list": meridian_list,
+                                  "meridian_name": meridian_name,                                  "meridian_list": meridian_list,
                                   "relative_states": rel_state_labels,
                                   "bypass": bypass_candidates,
                               })
