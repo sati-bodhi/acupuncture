@@ -1,0 +1,74 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+能量使用層
+{% endblock %}
+
+{% block fieldset_content %}
+
+<h2 class="text-info py-2">十二正經</h2>
+
+<div class="col-lg-10 py-2">
+    <div class="row py-3">
+        <h3 class="py-2 text-secondary">外邪入侵</h3>
+        <p class="h3"><a href="{% url 'channels' %}" class="href">六經與六氣</a></p>
+    </div>
+    <div class="row py-3">
+        <h3 class="py-2 text-secondary">調時差</h3>
+        <p class="h3"><a href="{% url 'horary' %}" class="href">子午流注</a></p>
+    </div>
+</div>
+
+<hr>
+
+<h2 class="text-info py-2">五行</h2>
+
+<div class="col-lg-10 py-2">
+
+    <div class="row py-3">
+        <h3 class="py-2 text-secondary">急性內傷</h3>
+        <span class="h3">古典穴位<a href="{% url 'elem-acute' %}" class="href">四針法</a></span>
+    </div>
+
+    <div class="row py-3">
+        <h3 class="py-2 text-secondary">亞急性、慢性內傷</h3>
+        <p class="h3"><a href="{% url 'elem-chronic' %}" class="href">募俞穴</a></p>
+    </div>
+
+</div>
+{% endblock %}
+
+<!-- What lies outside the block will not be rendered. -->
+
+<!-- radio button -->
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="" id="" value="">
+            <label class="form-check-label" for="">
+
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="" id="" value="">
+            <label class="form-check-label" for="">
+
+            </label>
+        </div>
+
+<!-- back button -->
+
+<div class="col py-3">
+    <button class="btn btn-primary" type="button" onclick="history.back()">Back</button>
+</div>
+
+<!-- Dropdown list -->
+
+<select name="" class="form-select py-1" style="font-size:20px;" id="">
+
+    {% for id, zh_name in meridian_list %}
+    <option value="{{ organ_id }}">
+        {{ zh_name }}（{{ id }}）</option>
+    {% endfor %}
+
+</select>

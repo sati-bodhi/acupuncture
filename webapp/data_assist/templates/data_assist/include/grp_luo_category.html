@@ -9,14 +9,16 @@
 
 {% if category %}
 
-<h2 class="text-danger" id="category">{{ category_lbl }}</h2>
+<h2 class="text-danger py-3" id="category">{{ category_lbl }}</h2>
 
 <div class="form-check">
     <input class="form-check-input" type="hidden" name="category" id="{{ category }}" value="{{ category }}">
 </div>
 
-<div class="col py-3">
-    <button class="btn btn-primary" type="button" onclick="history.back()">Back</button>
+<hr>
+
+<div class="col py-2">
+    <button class="btn btn-primary" type="button" onclick="window.location.href='/diagnose/group_luo';">Reset</button>
 </div>
 
 {% else %}

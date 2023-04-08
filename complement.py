@@ -234,7 +234,7 @@ class Luo(Meridian, Calc):
                        None,
                        'Loss of strength in all joints'],
 
-        'excess_zh': ['手掌灼熱，手指疼痛，燒灼感',
+        'excess_zh': ['手掌灼熱，手指疼痛，有燒灼感',
                       '齲齒，耳聾',
                       '喉嚨痹，失音，驚厥抽搐，吞嚥困難，癲癇，瘋狂癡呆，有痰液',
                       '腸腹脹，腹瀉，嘔吐，上吐下瀉，痢疾',
@@ -272,18 +272,6 @@ class Luo(Meridian, Calc):
 
         super().__init__()
 
-        if all([meridian, state]):
-
-            self.meridian = meridian
-            self.paired_meridian = self.get_paired_elem_from_list(meridian, self.SUP_PROFOUND) \
-                if meridian != "LO" else None
-
-            self.state = state
-            self.paired_state = "+" if self.state == "-" else "-" if self.state == "+" else None
-
-            self.meridian_yinyang = 0 if self.meridian in self.yin else 1 if self.meridian in self.yang else None
-            self.paired_yinyang = 0 if self.meridian_yinyang == 1 else 1 if self.meridian_yinyang == 0 else None
-
         self.prescribe = None
         self.logic = None
         self.symptom = None
@@ -296,6 +284,20 @@ class Luo(Meridian, Calc):
         self.paired_luo_meridian = None
         self.paired_luo_point = None
 
+        if all([meridian, state]):
+
+            self.meridian = meridian
+            self.paired_meridian = self.get_paired_elem_from_list(meridian, self.SUP_PROFOUND) \
+                if meridian != "LO" else None
+
+            self.state = state
+            self.paired_state = "+" if self.state == "-" else "-" if self.state == "+" else None
+
+            self.meridian_yinyang = 0 if self.meridian in self.yin else 1 if self.meridian in self.yang else None
+            self.paired_yinyang = 0 if self.meridian_yinyang == 1 else 1 if self.meridian_yinyang == 0 else None
+
+            self.relative_state_label = None
+
     def balance(self):
         # 橫絡，聯繫相表裡的陰經與陽經
 
@@ -306,6 +308,8 @@ class Luo(Meridian, Calc):
 
         if self.meridian_yinyang == 1:
             data = data[-1:] + data[:-1]  # swap list items, yin before yang.
+
+        self.relative_state_label = [(m, s) for m, y, s in data]
 
         rel_state = [s for m, y, s in data]
         meridian_pair = [m for m, y, s in data]
@@ -322,7 +326,9 @@ class Luo(Meridian, Calc):
                 "瀉陰經絡穴",
             ]
 
-        elif rel_state == ("-", "+"):  # 陽經有餘，陰經不足。
+            return self.prescribe
+
+        elif rel_state == ["-", "+"]:  # 陽經有餘，陰經不足。
 
             self.prescribe = [
                 (self.luo_point_of_meridian(meridian_pair[0]), "++"),
@@ -334,7 +340,7 @@ class Luo(Meridian, Calc):
                 "瀉陽經絡穴",
             ]
 
-        return self.prescribe
+            return self.prescribe
 
     def locate_symptom(self, symptom):
 
@@ -354,11 +360,17 @@ class Luo(Meridian, Calc):
             if all([excess, deficient]):
                 return excess, deficient
             elif excess:
-                self.target_luo = [excess, "+"]
-                return self.target_luo
+                if len(excess) == 1:
+                    self.target_luo = [excess, "+"]
+                    return self.target_luo
+                else:
+                    return "+", excess
             elif deficient:
-                self.target_luo = [deficient, "-"]
-                return self.target_luo
+                if len(deficient) == 1:
+                    self.target_luo = [deficient, "-"]
+                    return self.target_luo
+                else:
+                    return "-", deficient
 
     def treat_symptom(self):
         if self.target_luo:
@@ -394,7 +406,16 @@ class Luo(Meridian, Calc):
                         self.prescribe = [(self.target_luo_point, "--")]
                         self.logic = ["大絡直接瀉絡穴"]
 
-        return self.prescribe, self.logic
+        return self.prescribe
+
+    @staticmethod
+    def meridian_label():
+        db = Database()
+        lbl = db.exec_script("""
+        SELECT ID, meridianName_abbrev FROM Meridian;
+        """)
+        if lbl:
+            return lbl
 
     @staticmethod
     def luo_point_of_meridian(meridian):
@@ -425,6 +446,31 @@ class Luo(Meridian, Calc):
         """, fetch_one=True)
         if label:
             return label[0]
+
+    def select_symptom(self, luo_id, state):
+        db = Database()
+
+        if state == "+":
+
+            symptom = db.exec_script(f"""
+            SELECT ID, acuID, meridian, excess, excess_zh FROM Luo
+            WHERE ID = '{luo_id}';
+            """, fetch_one=True)
+
+            if symptom:
+                self.target_luo = ([symptom], "+")
+                return self.target_luo
+
+        elif state == "-":
+
+            symptom = db.exec_script(f"""
+            SELECT ID, acuID, meridian, excess, excess_zh FROM Luo
+            WHERE ID = '{luo_id}';
+            """, fetch_one=True)
+
+            if symptom:
+                self.target_luo = [[symptom], "-"]
+                return self.target_luo
 
     @staticmethod
     def translate_symptoms():
@@ -466,14 +512,17 @@ class Luo(Meridian, Calc):
 if __name__ == '__main__':
     pass
 
-    l = Luo("HT", "+")
+    # l = Luo()
+
+    # l.build_db()
+
     # print(l.balance())
 
     # excess, deficiency = l.translate_symptoms()
     # print(deficiency)
 
-    l.locate_symptom("掌灼熱")
-    print(l.treat_symptom())
+    # l.locate_symptom("掌灼熱")
+    # print(l.treat_symptom())
 
     # gl = GroupLuo("r", nature="atonic", hemiplegia=True)
     # print(gl.hemiplegia())

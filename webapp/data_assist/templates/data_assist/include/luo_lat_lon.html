@@ -1,0 +1,51 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+縱絡與橫絡
+{% endblock %}
+
+{% block fieldset_content %}
+
+<h2 class="text-secondary py-3">調理</h2>
+
+{% if category %}
+
+<h2 class="text-danger py-3" id="lat_lon">{{ category_lbl }}</h2>
+
+<div class="form-check">
+    <input class="form-check-input" type="hidden" name="lat_lon" id="{{ category }}" value="{{ category }}">
+</div>
+
+<hr>
+
+<div class="col py-1">
+    <button class="btn btn-primary" type="button" onclick="window.location.href='/diagnose/luo';">Reset</button>
+</div>
+
+{% else %}
+
+<div class="col-lg-8 py-3">
+
+    <div class="form-group row justify-content-center">
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="lat_lon" id="balance" value="balance">
+            <label class="form-check-label" for="balance">
+            橫絡：<br class="d-md-none">平衡陰陽
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="lat_lon" id="symptom" value="symptom">
+            <label class="form-check-label" for="symptom">
+            縱絡：<br class="d-md-none">緩解症狀
+            </label>
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

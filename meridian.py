@@ -15,6 +15,7 @@ class Meridian(Calc):
         ("LI", "LU"),
         ("BL", "KI"),
         ("TE", "PC"),
+        ("GV", "CV"),  # 督脈與任脈相表裡
     ]
 
     MERIDIAN = ("LU", "LI", "ST", "SP", "HT", "SI", "BL", "KI", "PC", "TE", "GB", "LR")

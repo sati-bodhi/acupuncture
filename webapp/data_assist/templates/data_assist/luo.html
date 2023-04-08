@@ -1,0 +1,82 @@
+{% extends 'data_assist/diagnose.html' %}
+
+{% block diagnostic_title %}
+絡脈
+{% endblock %}
+
+
+{% block diagnostic_form %}
+<form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'luo' %}">
+    {% csrf_token %}
+    {% include 'data_assist/include/luo_lat_lon.html' %}
+
+    {% if category == "balance" %}
+        {% include 'data_assist/include/luo_meridian.html' %}
+    {% elif category == "symptom" %}
+        {% include 'data_assist/include/luo_symptom.html' %}
+    {% endif %}
+
+    {% if meridian %}
+        {% include 'data_assist/include/luo_relative_energies.html' %}
+    {% endif %}
+
+    {% if found_multiple %}
+        {% include 'data_assist/include/luo_symptom_found.html'  %}
+    {% endif %}
+
+    <div class="col py-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block diagnostic_result %}
+
+{% if balance %}
+
+<h2 class="text-success py-3">平衡陰陽</h2>
+
+<div class="container col-lg-5 py-3">
+        <h3 class="text-danger py-3">
+            {% for id, name, state in relative_states %}
+                {{ name|slice:":-1" }}{{ state }}
+            {% endfor %}
+        </h3>
+        <div class="row">
+        {% for point, logic in prescription %}
+            <ul>
+                <h4 class="py-2 text-info">{{ logic | safe }}</h4>
+                <li>{{ point | safe }}</li>
+            </ul>
+        {% endfor %}
+        </div>
+</div>
+
+{% else %}
+
+<h2 class="text-danger py-3">縱絡{{ diagnosis }}</h2>
+
+<div class="container col-lg-6 py-3">
+
+    <h3 class="text-warning py-3">
+        症狀
+    </h3>
+    <div class="row py-2">
+        <p class="text-start">{{ symptom }}</p>
+    </div>
+
+    <h3 class="text-secondary py-3">處方</h3>
+    <div class="row">
+    {% for point, logic in prescription %}
+        <ul>
+            <h4 class="py-2 text-info">{{ logic | safe }}</h4>
+            <li>{{ point | safe }}</li>
+        </ul>
+    {% endfor %}
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

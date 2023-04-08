@@ -1,0 +1,89 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+縱絡症狀
+{% endblock %}
+
+{% block fieldset_content %}
+
+<h2 class="text-secondary pt-2">請形容</h2>
+
+<div class="col-lg-8 py-3">
+    <div class="form-group row justify-content-center py-3">
+        <div class="form-outline">
+
+            {% if found_target %}
+            <input name="symptom_query" type="search" id="valid_symptom" class="form-control" placeholder="症狀關鍵字" aria-label="Search" value="{{ query_str }}"/>
+            <input name="symptom" type="hidden" id="symptom" class="form-control" value="{{ symptom }}"/>
+            <input name="diagnosis" type="hidden" id="diagnosis" class="form-control" value="{{ diagnosis }}"/>
+            <input name="prescription" type="hidden" id="prescription" class="form-control" value="{{ prescription }}"/>
+            <input name="target" type="hidden" id="target" class="form-control" value="{{ target }}"/>
+            {% else %}
+            <input name="symptom_query" type="search" id="symptom_query" class="form-control" placeholder="症狀關鍵字" aria-label="Search" />
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% if found_target %}
+
+<hr>
+<h2 class="text-info py-3">尋得症狀</h2>
+<div class="col-lg-8 py-3">
+    <div class="row py-3">
+        <p>{{ symptom }}</p>
+    </div>
+</div>
+
+<hr>
+
+<div class="form-check py-3 col-lg-5">
+    <input class="form-check-input" type="checkbox" value="{{ symptom_id }}" id="symptom_confirm" name="symptom_confirm">
+    <label class="form-check-label" for="symptom_confirm">
+    症狀正確
+  </label>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+<!-- What lies outside the block will not be rendered. -->
+
+
+
+
+
+<!-- radio button -->
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="" id="" value="">
+            <label class="form-check-label" for="">
+
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="" id="" value="">
+            <label class="form-check-label" for="">
+
+            </label>
+        </div>
+
+<!-- back button -->
+
+<div class="col py-3">
+    <button class="btn btn-primary" type="button" onclick="history.back()">Back</button>
+</div>
+
+<!-- Dropdown list -->
+
+<select name="" class="form-select py-1" style="font-size:20px;" id="">
+
+    {% for id, zh_name in meridian_list %}
+    <option value="{{ organ_id }}">
+        {{ zh_name }}（{{ id }}）</option>
+    {% endfor %}
+
+</select>

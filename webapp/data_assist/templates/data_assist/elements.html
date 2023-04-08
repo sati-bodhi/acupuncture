@@ -28,17 +28,19 @@
 </div>
 
 <h2 class="text-secondary py-3">處方</h2>
-<div class="container">
-    <ol>
+<div class="container col-lg-8 justify-content-center">
+
     {% for logic, formula in prescription %}
         <div class="row py-2">
-            <h4 class="text-info py-3">{{ logic | safe }}</h4>
+            <p class="text-info py-3">{{ logic | safe }}</p>
+            <ul>
             {% for point, attrib in formula %}
-                <li>{{ point | safe }}（{{ attrib }}）</li>
+                <li>{{ point | safe }} {{ attrib |safe }}</li>
             {% endfor %}
+            </ul>
         </div>
     {% endfor %}
-    </ol>
+
 </div>
 
 {% endblock %}

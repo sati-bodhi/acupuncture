@@ -1,0 +1,82 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+尋得症狀
+{% endblock %}
+
+{% block fieldset_content %}
+
+<h2 class="text-secondary pt-2">請選擇</h2>
+
+<div class="col-lg-10 py-3">
+
+    {% if excess %}
+    <div class="form-group row py-3">
+        <h3 class="text-info py-2">實證</h3>
+        {% for symptom in excess %}
+            <div class="form-check row justify-content-start">
+              <!--suppress XmlDuplicatedId -->
+                <input name="symptom_id" class="form-check-input" type="radio" value="{{ symptom.0 }}+" id="{{symptom.0}}+">
+                <label class="form-check-label text-start" for="{{symptom.0}}+">
+                    {{ symptom.4 }}
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if deficient %}
+    <div class="form-group row py-3">
+        <h3 class="text-info py-2">虛證</h3>
+        {% for symptom in deficient %}
+            <div class="form-check row">
+              <input name="symptom_id" class="form-check-input" type="radio" value="{{ symptom.0 }}-" id="{{symptom.0}}-">
+              <label class="form-check-label text-start" for="{{symptom.0}}-">
+                {{ symptom.4 }}
+              </label>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+<!-- What lies outside the block will not be rendered. -->
+
+<!-- radio button -->
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="" id="" value="">
+            <label class="form-check-label" for="">
+
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="" id="" value="">
+            <label class="form-check-label" for="">
+
+            </label>
+        </div>
+
+<!-- back button -->
+
+<div class="col py-3">
+    <button class="btn btn-primary" type="button" onclick="history.back()">Back</button>
+</div>
+
+<!-- Dropdown list -->
+
+<select name="" class="form-select py-1" style="font-size:20px;" id="">
+
+    {% for id, zh_name in meridian_list %}
+    <option value="{{ organ_id }}">
+        {{ zh_name }}（{{ id }}）</option>
+    {% endfor %}
+
+</select>
+
+
+

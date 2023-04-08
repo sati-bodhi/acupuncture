@@ -345,48 +345,48 @@ class Acute(Element):
         if energy == "-":  # 能量不足。
 
             if "mother" in excess:
-                # === 加強母與君相生的聯結，把母的能量導向君 ===
+                # === 加強母與君相生的聯結<br>把母的能量導向君 ===
                 self.prescription.append(self.enhance_connection(lord, "mother"))
-                self.logic.append("強化母與君的聯繫，把多餘能量導向君。")
+                self.logic.append("強化母的聯繫<br>把多餘能量導向君")
             else:
                 # === 強化母相生的聯繫（虛則補其母）===
                 self.prescription.append(self.tonify_mother(lord))
-                self.logic.append("虛則補其母。")
+                self.logic.append("虛則補其母")
 
             if "minister" in excess or ("minister" not in excess and "minister" not in deficient):
                 # ===瀉臣本穴； 減弱臣相剋的聯繫===
                 self.prescription.append(self.adjust_minister_energy(lord, "--"))
-                self.logic.append("瀉臣本穴，減弱臣相剋的力道。")
+                self.logic.append("瀉臣本穴<br>減弱相剋的力道")
             elif "minister" in deficient:
                 pass  # 不必理會君虛臣也虛的情況；主要由相生關係中來調理。
 
         elif energy == "+":  # 能量有餘。
 
             if "son" in deficient:
-                # === 强化君生子的聯繫，把君多餘的能量導向子 ===
+                # === 强化君生子的聯繫<br>把君多餘的能量導向子 ===
                 self.prescription.append(self.enhance_connection(lord, "son"))
-                self.logic.append("強化君與子的聯繫，把多餘能量導向子。")
+                self.logic.append("強化子的聯繫<br>把多餘能量導向子")
             elif "son" in excess:
                 # ===讓多餘能量流向子（實則瀉其子）===
                 self.prescription.append(self.disperse_son(lord))
-                self.logic.append("實則瀉其子。")
+                self.logic.append("實則瀉其子")
             elif "son" not in excess and "son" not in deficient:
                 # ===讓多餘能量流向子（實則瀉其子）===
                 self.prescription.append(self.disperse_son(lord))
-                self.logic.append("實則瀉其子。")
+                self.logic.append("實則瀉其子")
 
             if "minister" in excess:
                 # === 強化臣剋君的聯繫 ===
                 self.prescription.append(self.enhance_connection(lord, "minister"))
-                self.logic.append("強化臣與君的聯繫，讓臣來剋君。")
+                self.logic.append("強化臣的聯繫<br>讓臣來剋君")
             elif "minister" in deficient:
-                # === 補臣本穴，加強臣剋君的力道 ===
+                # === 補臣本穴<br>加強臣剋君的力道 ===
                 self.prescription.append(self.adjust_minister_energy(lord, "++"))
-                self.logic.append("補臣本穴，強化臣剋君的力道。")
+                self.logic.append("補臣本穴<br>強化臣剋君的力道")
             elif "minister" not in excess and "minister" not in deficient:
-                # === 補臣本穴，加強臣剋君的力道 ===
+                # === 補臣本穴<br>加強臣剋君的力道 ===
                 self.prescription.append(self.adjust_minister_energy(lord, "++"))
-                self.logic.append("補臣本穴，強化臣剋君的力道。")
+                self.logic.append("補臣本穴<br>強化臣剋君的力道")
 
         return zip(self.logic, self.prescription)
 

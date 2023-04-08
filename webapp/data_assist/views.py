@@ -656,7 +656,9 @@ def elements(request):
                 pass
 
             for pt, act in formula:
-                attrib.append(p.get_attributes(pt))
+                attrib_raw = p.get_attributes(pt)
+                attrib_tagged = "<br class='d-sm-none'>（" + attrib_raw + "）"
+                attrib.append(attrib_tagged)
 
             formula = parse_prescription(formula)
             formula = render_prescription(formula)
@@ -755,7 +757,6 @@ def extraordinary(request):
 
         ex = Extraordinary(meridian_id)
 
-
         rel_state = request.GET.get("rel_state") == meridian_id
 
         meridian_name = ex.id_to_meridian_name(meridian_id, abbrev=True)
@@ -819,7 +820,8 @@ def extraordinary(request):
                                   "rel_state": True,
                                   "meridian": True,
                                   "meridian_id": meridian_id,
-                                  "meridian_name": meridian_name,                                  "meridian_list": meridian_list,
+                                  "meridian_name": meridian_name,
+                                  "meridian_list": meridian_list,
                                   "relative_states": rel_state_labels,
                                   "bypass": bypass_candidates,
                               })
@@ -852,7 +854,200 @@ def jingbie(request):
 
 
 def luo(request):
-    return render(request, template_name='data_assist/luo.html')
+    category = request.GET.get("lat_lon")
+
+    luo = Luo()
+    meridian_lbl = luo.meridian_label()
+
+    if category:
+        if category == "balance":
+            category_lbl = "橫絡"
+
+            meridian = request.GET.get("meridian")
+            state = request.GET.get("state")
+
+            if all([meridian, state]):
+
+                rel_state = request.GET.get("rel_state") == meridian
+
+                luo = Luo(meridian, state)
+                luo.balance()
+
+                relative_states = luo.relative_state_label
+
+                rel_state_labels = parse_state(relative_states, meridian=True, abbrev=True)
+
+                if rel_state:
+
+                    prescription = luo.prescribe
+
+                    prescription = parse_prescription(prescription)
+                    prescription = render_prescription(prescription)
+
+                    logic = luo.logic
+
+                    treatment = zip(prescription, logic)
+
+                    return render(request, template_name='data_assist/luo.html',
+                                  context={  # Balance Result
+                                      "result": True,
+                                      "balance": True,
+                                      "meridian": meridian,
+                                      "meridian_name": id_to_meridian_name(meridian, abbrev=True),
+                                      "meridian_state": state,
+                                      "relative_states": rel_state_labels,
+                                      "category": category,
+                                      "category_lbl": category_lbl,
+                                      "meridian_list": meridian_lbl,
+                                      "prescription": treatment,
+                                  })
+                else:
+                    return render(request, template_name='data_assist/luo.html',
+                                  context={  # No relative state; ready for input
+                                      "meridian": meridian,
+                                      "meridian_name": id_to_meridian_name(meridian, abbrev=True),
+                                      "meridian_state": state,
+                                      "category": category,
+                                      "category_lbl": category_lbl,
+                                      "meridian_list": meridian_lbl,
+                                      "relative_states": rel_state_labels,
+                                  })
+
+            else:
+                return render(request, template_name='data_assist/luo.html',
+                              context={  # No meridian
+                                  "category": category,
+                                  "category_lbl": category_lbl,
+                                  "meridian_list": meridian_lbl,
+                              })
+
+# =========================================================
+
+        elif category == "symptom":
+
+            category_lbl = "縱絡"
+            symptom = request.GET.get("symptom")
+            confirm = request.GET.get("symptom_confirm")
+
+            prescription = request.GET.get("prescription")  # stored in hidden input tag.
+            diagnosis = request.GET.get("diagnosis")
+            symptom_id = request.GET.get("symptom_id")
+
+            if symptom_id and not symptom:
+
+                luo = Luo()
+                luo.select_symptom(symptom_id[:-1], symptom_id[-1])
+                prescription = luo.treat_symptom()
+                logic = luo.logic
+
+                target, state = luo.target_luo
+                symptom = target[0][-1]
+                meridian = target[0][2]
+                diagnosis = "".join(parse_state([(meridian, state)], abbrev=True))
+
+                prescription = parse_prescription(prescription)
+                prescription = render_prescription(prescription)
+
+                treatment = zip(prescription, logic)
+
+                return render(request, template_name='data_assist/luo.html',
+                              context={  # Symptom Result via radio-button; after query yields multiple possibilities.
+                                  "result": True,
+                                  "symptom": symptom,
+                                  "symptom_id": symptom_id,
+                                  "diagnosis": diagnosis,
+                                  "prescription": treatment,
+                              })
+
+            elif prescription:  # for Symptom Result via single query below.
+                prescription = eval(prescription)  # convert text to code.
+
+            if symptom and confirm:
+                return render(request, template_name='data_assist/luo.html',
+                              context={  # Symptom Result via Single Query.
+                                  "result": True,
+                                  "symptom": symptom,
+                                  "symptom_id": confirm,
+                                  "diagnosis": diagnosis,
+                                  "prescription": prescription,
+                              })
+
+# =========================================================
+
+            elif symptom:  # query input.
+
+                luo = Luo()
+                found = luo.locate_symptom(symptom)
+
+                if luo.target_luo:  # target found.
+
+                    query_str = symptom
+
+                    target, state = luo.target_luo
+                    symptom_id = target[0][0] + state
+                    symptom = target[0][-1]
+                    meridian = target[0][2]
+                    diagnosis = "".join(parse_state([(meridian, state)], abbrev=True))
+
+                    prescription = luo.treat_symptom()
+                    logic = luo.logic
+
+                    prescription = parse_prescription(prescription)
+                    prescription = render_prescription(prescription)
+
+                    treatment = zip(prescription, logic)
+
+                    return render(request, template_name='data_assist/luo.html',
+                                  context={  # return single target,
+                                      # pass variables into hidden tags within luo_symptom_found.html.
+                                      "found_target": True,
+                                      "query_str": query_str,
+                                      "target": luo.target_luo,
+                                      "category": category,
+                                      "category_lbl": category_lbl,
+                                      "symptom": symptom,
+                                      "symptom_id": symptom_id,
+                                      "diagnosis": diagnosis,
+                                      "prescription": list(treatment),
+                                  })
+
+                elif found:  # query yields multiple results.
+
+                    excess = deficient = None
+
+                    if found[0] not in ["+", "-"]:
+                        excess, deficient = found
+                    elif found[0] == "+":
+                        excess = found[1]
+                    elif found[0] == "-":
+                        deficient = found[1]
+
+                    return render(request, template_name='data_assist/luo.html',
+                                  context={  # Return multiple results radio-button query form.
+                                      "found": True,
+                                      "found_multiple": True,
+                                      "category": category,
+                                      "category_lbl": category_lbl,
+                                      "excess": excess,
+                                      "deficient": deficient,
+                                  })
+
+                else:  # query NOT FOUND.
+                    return render(request, template_name='data_assist/luo.html',
+                                  context={
+                                      "category": category,
+                                      "category_lbl": category_lbl,
+                                  })
+
+            else:  #
+                return render(request, template_name='data_assist/luo.html',
+                              context={
+                                  "category": category,
+                                  "category_lbl": category_lbl,
+                              })
+
+    else:  # no query input.
+        return render(request, template_name='data_assist/luo.html')  # basic - no category
 
 
 def group_luo(request):
