@@ -779,9 +779,18 @@ class Season(Element):
         "冬": "水",
     }
 
+    season_section = ["春初", "春初", "春分", "春分", "春末", "春末",
+                      "夏初", "夏初", "夏至", "夏至", "夏末", "夏末",
+                      "秋初", "秋初", "秋分", "秋分", "秋末", "秋末",
+                      "冬初", "冬初", "冬至", "冬至", "冬末", "冬末",
+                      ]
+
     def __init__(self):
 
+        super().__init__()
         self.season_label = None
+        self.season_section_labels = list(dict.fromkeys(self.season_section))  # remove duplicates.
+
         self.earth_energy = None
         self.organ = None
         self.solar_term_date = None
@@ -792,6 +801,7 @@ class Season(Element):
         self.db_yr = None
 
         self.season = None
+        self.season_section = None
         self.solar_term = None
         self.season_df = None
         self.solar_term_df = None
@@ -853,6 +863,7 @@ class Season(Element):
         season_dict = {
             "solar_term": terms_array,
             "season": season_array,
+            "season_section": self.season_section,
             "long_summer": [True if term in ["大暑", "立秋", "處暑"] else False for term in terms_array],  # 夏末跨季一個月
             "energy_5elem": season_energy,
             "earth_energy": [True if term in terms_array[season_change] else False for term in terms_array],
@@ -872,9 +883,9 @@ class Season(Element):
 
         db = Database()
         jieqi = db.exec_script("""
-                    SELECT solar_term, season, date_utc, long_summer FROM seasons;
+                    SELECT solar_term, season, season_section, date_utc, long_summer FROM seasons;
                     """)
-        dates = [dt for tm, sn, dt, ls in jieqi]
+        dates = [dt for tm, sn, ss, dt, ls in jieqi]
 
         for i, dt in enumerate(dates):
             if i + 1 <= len(dates):
@@ -883,15 +894,17 @@ class Season(Element):
 
                 if lower_bound <= self.current_date < upper_bound:
                     self.solar_term = jieqi[i][0]
-                    self.solar_term_date = datetime.fromisoformat(jieqi[i][2]).astimezone(self.tz)
+                    self.solar_term_date = datetime.fromisoformat(jieqi[i][3]).astimezone(self.tz)
                     self.season = jieqi[i][1]
-                    if self.season == "夏" or self.season == "秋" and jieqi[i][3] == 1:
+                    self.season_section = jieqi[i][2]
+
+                    if self.season == "夏" or self.season == "秋" and jieqi[i][4] == 1:
                         self.season_label = self.season + f"（長夏）"
                     else:
                         self.season_label = self.season
 
                     return self.season, self.solar_term, self.solar_term_date, \
-                        self.current_date.astimezone(self.tz), self.tz, self.season_label
+                        self.current_date.astimezone(self.tz), self.tz, self.season_label, self.season_section
             else:
                 break
 
@@ -953,6 +966,18 @@ class Pentashu:
         WHERE ID = "{acupoint}";
         """)[0]
         return self.attrib[1] + self.attrib[2] + "穴"
+
+    @classmethod
+    def specific_point_of_meridian(cls, meridian, attrib):
+        """Returns the specific point of a meridian when given its attribute (井、滎、輸、經、合). """
+
+        db = Database()
+        acupoint = db.exec_script(f"""
+        SELECT ID FROM Pentashu
+        WHERE meridian_id = "{meridian}" AND attrib = "{attrib}";
+        """, fetch_one=True)[0]
+
+        return acupoint
 
 
 class Mushu:

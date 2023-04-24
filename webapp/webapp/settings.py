@@ -32,7 +32,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '218.212.40.70',
-    'acupuncture.loca.lt',
+    'acupunctureclassique.duckdns.org',
 ]
 
 

@@ -3,7 +3,9 @@ import numpy as np
 from acupuncture.db import Database
 from acupuncture.lookup import Calc
 from acupuncture.meridian import Meridian
+from acupuncture.element import Pentashu, Season
 from googletrans import Translator
+from tabula import read_pdf
 
 
 class GroupLuo:
@@ -78,7 +80,6 @@ class GroupLuo:
 
 
 class Luo(Meridian, Calc):
-
     df_dict = {
         'ID': ['LO01',
                'LO02',
@@ -285,7 +286,6 @@ class Luo(Meridian, Calc):
         self.paired_luo_point = None
 
         if all([meridian, state]):
-
             self.meridian = meridian
             self.paired_meridian = self.get_paired_elem_from_list(meridian, self.SUP_PROFOUND) \
                 if meridian != "LO" else None
@@ -509,8 +509,328 @@ class Luo(Meridian, Calc):
         db.df_to_sql(df, "Luo")
 
 
+class Jingjin(Pentashu, Season):
+    CONFLUENCE_PT = [
+        ("GB22", ["LU", "HT", "PC"]),
+        ("CV3", ["KI", "LR", "SP"]),
+        ("GB13", ["LI", "SI", "TE"]),
+        ("SI18", ["BL", "GB", "ST"]),
+    ]
+
+    df_dict = {
+        'Jing Jin:\rTendino-muscular\rchannels Vessels':
+            ['Lungs\rHui-Meeting Point:\rGB 22\r- Jing-Well: LU 11\r- Shu-Stream: LU 9\r- Jing-River: LU 8',
+             'Large Intestine\rHui-Meeting Point:\rGB 13\r- Jing-Well: LI 1\r- Shu-Stream: LI 3\r- Jing-River: LI 5',
+             'Stomach\rHui-Meeting Point:\rSI 18\r- Jing-Well: ST 45\r- Shu-Stream: ST 43\r- Jing-River: ST 41',
+             'Spleen\rHui-Meeting Point:\rRM 3\r- Jing-Well: SP 1\r- Shu-Stream: SP 3\r- Jing-River: SP 5',
+             'Heart\rHui-Meeting Point:\rGB 22\r- Jing-Well: HT 9\r- Shu-Stream: HT 7\r- Jing-River: HT 4',
+             'Small Intestine\rHui-Meeting Point:\rGB 13\r- Jing-Well: SI 1\r- Shu-Stream: SI 3\r- Jing-River: SI 5',
+             'Urinary Bladder\rHui-Meeting Point:\rSI 18\r- Jing-Well: UB 67\r- Shu-Stream: UB 65\r- Jing-River: UB 60',
+             'Kidneys\rHui-Meeting Point:\rRM 3\r- Jing-Well: KD 1\r- Shu-Stream: KD 3\r- Jing-River: KD 7',
+             'Pericardium\rHui-Meeting Point:\rGB 22\r- Jing-Well: PC 9\r- Shu-Stream: PC 7\r- Jing-River: PC 5',
+             'Triple Warmer\rHui-Meeting Point:\rGB 13\r- Jing-Well: TW 1\r- Shu-Stream: TW 3\r- Jing-River: TW 6',
+             'Gallbladder\rHui-Meeting Point:\rSI 18\r- Jing-Well: GB 44\r- Shu-Stream: GB 41\r- Jing-River: GB 38',
+             'Liver\rHui-Meeting Point:\rRM 3\r- Jing-Well: LV 1\r- Shu-Stream: LV 3\r- Jing-River: LV 4'],
+
+        'Trajectory':
+            [
+                'Thumb>thenaremi-\rnence>radialtunnel\r>forearm>elbow>\ranterior aspect of arm\r> underneath armpit >\rsubclavicularfossa>\rLI 15 > ST 12 > chest >\rdiaphragm>floating\rribs',
+                'Extremity of forefinger\r> back of wrist > exter-\rnal border of forearm >\rexternal side of elbow\r>externalaspectof\rarm > LI 15\r-firstbranch>upper\rpart of scapula > inser-\rtion of T2 to T7\r-mainbranch>neck\r> side of nose > nasal\reminence GB 13 > skull\r>descendsagainto\rthe opposite corner of\rthe jaw',
+                '- first branch: 2nd, 3rd\rand4thtoes>instep\r(ankle)>externalas-\rpect of leg, fibula > ex-\rternal aspect of knee >\rhip (joint) > side > spi-\rnal cord > T 11 - T 12\r-secondbranch:2nd,\r3rd and 4th toes > instep\r(ankle) > frontal aspect\rof leg >  front of knee\r(sending a small vessel\rto join the first branch )\r> ST  32 > loins (head of\rfemur) > genital organs\r> abdomen > subclavicular fossa >\rneck>aroundmouth\r> nose > a tiny vessel\rbelow the eye and ano-\rther at the front of the\rear',
+                'Posterointernalangle\rofnailofgreattoe>\rinternal malleolus > ti-\rbia > internal aspect of\rthigh > hip > head of\rfemur > genital organs\r> abdomen > umbilicus\r> ribs > chest > frontal\raspect of spinal cord >\rT 11',
+                'Externalextremityof\rlittlefinger>pisiform\rbone > internal elbow\r> internal arm > armpit\r>breast>sternum>\rdiaphragm > umbilicus',
+                'Internalextremityof\rlittlefinger>backof\rwrist > internal aspect\rofforearm>epitro-\rchlea > back of arm >\runder armpit > behind\rand above fold of arm-\rpit > scapula > neck >\rtip of the mastoid > ear\r> lower mandibular an-\rgle > external angle of\reye > forehead',
+                'First Part:\rExtremityoflittletoe\r> external malleolus >\rexternal aspect of knee\r> external aspect of leg\r> heel > external aspect\rof foot > external popli-\rteal cavity > descends\rdown middle of calf >\rinternal popliteal cavity\r>posterioraspectof\rthigh > buttock > spinal\rcord >\rSecond Part:\rFirstbranch:napeof\rneck > base of tongue\r>occiput>crownof\rhead > forehead > nose\r> eye > insertion at side\rof the nose\rSecondbranch:T8>\runder armpit and LI 15\r> in front of  armpit >\rsubclavicularfossa>\rtip of mastoid\rThird branch: T 1\r> subclavicular fossa >\rside of nose',
+                'Beneath little toe > sole\rof foot > under internal\rmalleolus > heel > in-\rternal aspect of knee >\rthigh > genitals > spi-\rnal cord > nape of neck\r> occiput',
+                'Middlefinger>inter-\rnal aspect of elbow >\rinternal aspect of arm\r> under armpit > infe-\rroanteriorexternalrib\rcage > inner aspect of\rchest  > diaphragm',
+                'Fourth finger > forearm\r> elbow > arm > shoul-\rder > neck\rFirstbranch:angleof\rjaw > base of tongue\rSecondbranch:angle\rof jaw > in front of ear\r> external angle of the\reye > forehead > nasal\reminence: GB 13',
+                'Fourth toe > above ex-\rternalmalleolus>ex-\rternal leg and knee >\rFirstbranch:external\rcondyle > ST 32\rSecond (principal)\rbranch:\rexternal aspect of thigh\r> hip > sacrum > extre-\rmity of floating ribs >\rchest > breast > in front\rthe armpit > subclavi-\rcular fossa > posterior\rear>temple>nasal\reminence>crownof\rhead>branchesto-\rwardslowerjaw,side\rofnoseandexternal\rangle of eye',
+                'Big toe > antero-inter-\rnal region of malleolus\r> internal aspect of leg\r> internal tuberosity of\rtibia>internalaspect\rof thigh >\rgenital organs'],
+
+        'Symptoms':
+            [
+                'Bi of the last month of\rwinter:\rJanuary 6 to February 4,\rend of winter\r- Ligaments contracted\r- respiratory blockage\r- vomiting of blood\r- costal ligaments\raffected',
+                'Bi of the first month of\rsummer:\rMay 5 to June 5,\rstart of summer\r- Ligaments contracted\rand spasmic\r- blocked shoulder\r- not possible to rotate\rneck',
+                'Bi of the last month of\rspring:\rApril 4 to May 5 ,\rEnd of spring\rLigaments contracted\r- cramps in second,\rthird, fourth toes - fron-\rtal aspect of leg - region\rof ST 32 (Fu Tu – crou-\rching rabbit) - edema\rof pubis - spasms in the\rgenital and abdomen\rregion, subclavicular\rfossa and jaw – pulling\rof muscles in the ocu-\rlar region: When due to cold, the\reyecannotclose,dis-\rplacement of the angle\rof the mouth; when due\rto heat, paralysis of the\rmuscles of the jaw, the\reyes cannot open',
+                'Bi of the first month of\rautumn:\rAugust 6 to September 6,\rstart of autumn\rLigamentscontrac-\rted - pain in great toe,\rinternalmalleolus-\rcramps in calf, internal\raspect of thigh - genital\rcontractures - pain in\rumbilical region, ribs,\rspinal cord',
+                'Bi of the second month\rof winter:\rDecember 7 to January 6,\rWinter solstice\rLigaments contracted -\rpain from umbilicus to\rheart:aggravatedby\rlyingfacedownona\rhard surface',
+                'Bi of the second month\rof summer:\rJune 5 to July 5,\rSummer solstice\rLigaments contracted\r- earache, internal as-\rpect of elbow and arm,\rarmpit, scapula, neck -\rNoise causes pain from\rear to chin - eye closed\rconstantly - edema of\rneck - stiff neck',
+                'Bi of the second month\rof spring:\rMarch 4 to April 4,\rSpring equinox\r\rFirst Part:\rLigamentscontrac-\rted - cramps - pain or\redema of little toe and\rheel-poplitealcavity\rcontracted - opisthoto-\rnos\rSecond Part:\rMuscles and ligaments\rof the nape of neck\rstiff - shoulder cannot\rbe raised - tractive, fili-\rform pain from armpit\rto subclavicular fossa',
+                'Bi of the second month\rof autumn:\rSeptember 6 to Octo-\rber 6,\rAutumn equinox\rLigaments contracted -\rcramps in sole of foot\r-spasms,convulsions\r–impossible to lean\reither forwards or bac-\rkwards',
+                'Bi of the first month of\rwinter:\rNovember 6 - Decem-\rber 7,\rstart of winter\rLigaments contracted -\rblockage of respiration\r- spasms of cardia',
+                'Bi of the last month of\rsummer:\rJuly 5 to August 6,\rend of summer\rLigaments contracted,\rspasmic - the tongue\rbends back on itself',
+                'Bi of the first month of\rspring:\rFebruary 4 to March 4,\rstart of spring\rFirst branch:\rLigamentscontracted\r- cramps in fourth toe\rand calf - the knee joint\rcannot be either flexed\ror extended\rSecond (principal)\rbranch:\rPain in pubis, sacrum,\rhypochondria,floating\rribs, subclavicular fos-\rsa, throat - attack from\rone side: the opposite\reye cannot open –injury\rof the nasal eminence:\rthe opposite foot can-\rnot move',
+                'Bi of the last month of\rautumn:\rOctober 6 to Novem-\rber 6\rEnd of autumn\rLigamentscontracted\r- pain in first toe, front\rantero-internal malleo-\rlus,internalaspectof\rknee - cramp in internal\rthigh-permanentor\rabsent erection'],
+
+        'meridian': [
+            "LU",
+            "LI",
+            "ST",
+            "SP",
+            "HT",
+            "SI",
+            "BL",
+            "KI",
+            "PC",
+            "TE",
+            "GB",
+            "LR",
+        ],
+
+        'confluence_pt': [
+            'GB22',
+            'GB13',
+            'SI18',
+            'CV3',
+            'GB22',
+            'GB13',
+            'SI18',
+            'CV3',
+            'GB22',
+            'GB13',
+            'SI18',
+            'CV3',
+        ],
+
+        'period': [
+            "冬末",
+            "夏初",
+            "春末",
+            "秋初",
+            "冬至",
+            "夏至",
+            "春分",
+            "秋分",
+            "冬初",
+            "夏末",
+            "春初",
+            "秋末",
+        ],
+
+        'month': [1, 5, 4, 8, 12, 6, 3, 9, 11, 7, 2, 10],
+
+        'symptoms_zh': ['韌帶收縮，呼吸阻塞，吐血，脅肋拘急',
+                        '韌帶收縮痙攣 ， 肩不舉 ， 無法轉動頸部',
+                        '韌帶收縮 ， 第二，第三，第四腳趾的痙攣（抽筋） ， 腿部股前筋肉拘緊（伏兔位置） ， 恥骨部位水腫 ， 生殖器和腹部區域的痙攣，向上牽掣到鎖骨下窩和頰部（下巴）\n'
+                        '如有寒邪則掣引眼瞼不能閉合，嘴角歪斜；有熱則頰部（頜骨）肌肉癱瘓，眼睛無法睜開，面癱',
+                        '韌帶收縮 ， 大趾、內踝疼痛，（小腿）腓腸肌、大腿的內側筋肉痙攣 ， 陰部緊縮疼痛 ， 臍、兩脅（肋骨），脊柱疼痛',
+                        '韌帶收縮，臍部到心區疼痛：俯卧在硬板上疼痛加劇',
+                        '韌帶收縮，耳痛，肘和手臂內側、腋窩、肩胛、頸部疼痛，噪聲引發耳朵到下巴（頷部）的疼痛，眼睛始終閉合，頸部水腫、僵硬，斜頸',
+                        '第一部分：韌帶收縮，抽筋（痙攣），常見小趾或足跟（腳後跟）疼痛或水腫， 膕窩部攣急，角弓反張，坐骨神經痛；\n'
+                        '第二部分：頸部肌肉及韌帶僵值，肩不能抬起，從腋部到鎖骨下窩（冠狀窩）牽掣如絲狀疼痛',
+                        '韌帶收縮，腳底板抽筋，痙攣、抽搐，不能前俯後仰，（腰痛、腳心痛）',
+                        '韌帶收縮，呼吸阻塞，賁門痙攣',
+                        '韌帶收縮，痙攣，舌頭卷縮，肌腱炎',
+                        '第一分支開始：韌帶收縮，第四腳趾和腓腸肌痙戀（抽筋）， 膝關節不能屈伸；\n'
+                        '第二個（主要）分支：恥骨、骶骨、季肋部、浮肋、鎖骨下窩、咽部（喉嚨）疼痛 ， 患側筋肉拘急時，對側眼睛不能張開，\n'
+                        '患側額角（鼻降起？）受傷，引發對側腳不能移動',
+                        '韌帶收縮，足大趾、內踝尖前部、膝蓋內側疼痛 ，大腿內側痙攣，陽痿或異常勃起，帶狀疱疹（帶脈、絡穴）']
+
+    }
+
+    def __init__(self, season_section=None):
+        super().__init__()
+        self.symptom_zh = None
+        self.confluence_pt = None
+        self.meridian = None
+        self.month = None
+        self.well = None
+        self.stream = None
+        self.river = None
+
+        self.season_section = season_section
+
+    @staticmethod
+    def get_jj_table():
+
+        data = read_pdf("Pialoux_AC_guide.pdf", pages="146-150", stream=True, lattice=True)
+        df_list = [data[i] for i in range(len(data))]
+        df = pd.concat(df_list, ignore_index=True)
+
+        return df.to_dict("list")
+
+    def translate_symptoms(self):
+
+        translator = Translator()
+
+        translated = []
+
+        for symptom in self.df_dict['Symptoms']:
+            symptom = symptom.replace("-\r", "")
+            symptom = symptom.replace("\r", " ")
+            translated.append(translator.translate(symptom, src="en", dest="zh-TW").text)
+
+        return translated
+
+    @classmethod
+    def build_db(cls):
+        db = Database()
+        df = pd.DataFrame(cls.df_dict)
+
+        db.df_to_sql(df, "Jingjin")
+
+    @classmethod
+    def meridian_to_confluence(cls, meridian):
+        return [pt for pt, meridian_list in cls.CONFLUENCE_PT if meridian in meridian_list]
+
+    @classmethod
+    def well_stream_river(cls, meridian):
+        """Get a meridian's jing 井, shu 輸 and jing 經 acupoints."""
+
+        well = cls.specific_point_of_meridian(meridian, "井")
+        stream = cls.specific_point_of_meridian(meridian, "輸")
+        river = cls.specific_point_of_meridian(meridian, "經")
+
+        return well, stream, river
+
+    def diagnose(self, period):
+        db = Database()
+        rslt = db.exec_script(f"""
+        SELECT meridian, confluence_pt, month, symptoms_zh FROM Jingjin
+        WHERE period = "{period}";
+        """, fetch_one=True)
+        if rslt:
+            self.season_section = period
+            self.meridian, self.confluence_pt, self.month, self.symptom_zh = rslt
+            self.well, self.stream, self.river = self.well_stream_river(self.meridian)
+
+            return [
+                (self.confluence_pt, "++"),
+                (self.well, "++"),
+                (self.stream, "++"),
+                (self.river, "++"),
+            ]
+
+    def current_season_section(self):
+        return self.current_season()[-1]
+
+    # @classmethod
+    # def season_section_labels(cls):
+    #     return cls.season_section_labels
+
+
+class Jingbie:
+    df_dict = {
+        'Jing Bie\rDivergent Channels': [
+
+            'Lungs\rExtremity point on the\ropposite side: LU 11\rPaired organ: Large\rIntestine',
+
+            'Large Intestine\rExtremity point on the\ropposite side:\rLI 1 & LU 11\rPaired organ: Lungs',
+
+            'Stomach\rExtremity point on the\ropposite side: ST 45\rPaired organ: Spleen',
+
+            'Spleen\rPoint to tonify:\rRM 2 (opposite side)\rPaired organ: Stomach',
+
+            'Heart\rExtremity point on the\ropposite side: HT 9\rPaired organ: Small\rIntestine',
+
+            'Small Intestine\rExtremity point on the\ropposite side: SI 1\rPaired organ: Heart',
+
+            'Urinary Bladder\rExtremity point on the\ropposite side: UB 67\rPaired organ: Kidneys',
+
+            'Kidney\rExtremity point on the\ropposite side: KD 1\rPaired organ: Urinary\rBladder',
+
+            'Pericardium\rExtremity point on the\ropposite side: PC 9\rPaired organ:\rTriple Warmer',
+
+            'Triple Warmer\rExtremity point on the\ropposite side:\rTW 1 & PC 9\rPaired organ: Pericardium',
+
+            'Gallbladder\rExtremity point on the\ropposite side:\rGB 44 & UB 67\rPaired organ: Liver',
+
+            'Liver\rExtremity point on the\ropposite side: LV 1\rPaired organ: Gallbladder'],
+
+        'Trajectory': [
+
+            'Entry point: LU 5\r> in front of the armpit >\rPenetration point: LU 1\r> lungs > large intestine > '
+            'Point of emergence: subclavicular\rfossa > neck\rHui-Meeting point: LI 18',
+
+            'Entry point: LI 11\r> branching to thorax,\rbreast >\rPenetration point LI 15\r> back of neck > '
+            'spinal\rcord > large intestine >\rlungs > Point of emergence: subclavicular\rfossa > '
+            'neck\rHui-Meeting point: LI 18',
+
+            'Entry point: ST 36\r> hip >\rPenetration point: ST30\r> abdomen > stomach\r> spleen > heart > '
+            'esophagus > mouth > Point\rof emergence: bridge of\rnose > orbit > forehead\r> internal angle of '
+            'eye\rHui-Meeting point: UB 1',
+
+            'Entry point: SP 9\r> hip >\rPenetration point: SP 12\r> abdomen > spleen\r> stomach > heart >\rparallel '
+            'to the Jing Bie\rof stomach  >\rHui-Meeting point: UB 1',
+
+            'Entry point: HT 3\r> armpit >\rPenetration point: HT 1\r> chest > heart > throat\r> Point of '
+            'emergence:\rface > internal angle\rof eye\rHui-Meeting point: UB 1',
+
+            'Entry point: SI  8\r> shoulder > behind\rarmpit >\rPenetration point: SI 10\r> small intestine >\rheart '
+            '> throat >\rPoint of emergence:\rinternal face > angle\rof eye\rHui-Meeting point: UB 1',
+
+            'Entry point UB 40\rPenetration point:\rUB 40\r> anus > bladder >\rkidney > vertebral column > heart > '
+            'Point of\remergence: posterior\rbase of neck > nape of\rneck\rHui-Meeting point: UB 10',
+
+            'Entry point: KD 10\rPenetration point: KD 10\r> bladder > kidney > L2\r> DM 4 > heart '
+            '>\rPoint of emergence:\rnape of neck\rHui-Meeting point: UB 10',
+
+            'Entry point: PC 3\r> armpit\rPenetration point: PC 1\r> thorax > organs and\rviscera of the three '
+            'burners > throat > ear >\rPoint of emergence: tip\rof the mastoid\rHui-Meeting point: TW 16',
+
+            'Entry point: TW 10\r> crown of head >\rPenetration point: DM 20\rBack of ear > subclavicular fossa > '
+            'organs\rand viscera of Triple\rHeater> branching to\rthorax > throat > ear >\rPoint of emergence: tip\rof '
+            'mastoid\rHui-Meeting point: TW 16',
+
+            'Entry point: GB 34\r>posterior part of hip >\rPenetration point: GB 30\rpubis > abdomen > tip\rof 11th '
+            'rib > gall bladder>liver>heart>\resophagus > throat '
+            '>\rPoint of emergence:\rchin>mouth>forehead>externalangle\rof eye\rHui-Meeting point: GB 1',
+
+            'Entry point: LV 8\r> instep  (ankle)>\rPenetration point: LV 5\r>pubis> parallel to\rJing Bie of '
+            'gallbladder\r> Point of emergence:\rchin>mouth>forehead>external angle\rof eye\rHui-Meeting point: GB '
+            '1'],
+
+        'Lateralized symptoms\r(onset or aggravation)': [
+
+            'Between 3 a.m. and 5\ra.m.:\rAsthma - acceleration\rof respiratory rhythm –\rheat in chest',
+
+            'From 5 a.m. to 7 a.m.:\rPain in angle of transverse colon,shoulder,\rsubclavicular fossa,\rthroat - heat '
+            'in chest, hand contorted, headache',
+
+            'From 7 a.m. to 9 a.m.:\rMigraine, epistaxis',
+
+            'From 9 a.m. to 11 a.m.\rLumbar pain radiating\rdownwards to the sides and lower abdomen – impossibility '
+            'of\rlying on the back',
+
+            'From 11 a.m. to 1 p.m.\rPrecordalgia-oppression',
+
+            'From 1 p.m.. to 3 p.m.\rIntense ringing in ears\r- deafness',
+
+            'From 3 p.m. to 5 p.m.\rPain in the neck and\rhead',
+
+            'From 5 p.m. to 7 p.m.\rBloating - thoracic oppression - pain in heart',
+
+            'From 7 p.m. to 9 p.m.\rSore throat > dry mouth\r> anxiety > precordalgia',
+
+            'From 9 p.m. to 11 p.m.\rPain in the throat > migraines > dry mouth >\ranxiety > precordalgia',
+
+            'From 11 p.m. to 1 a.m.\rOppression in chest cough - sweating',
+
+            'From 1 a.m. to 3 a.m.\rPain in genital organs']}
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def get_jb_table():
+        data = read_pdf("Pialoux_AC_guide.pdf", pages="152-154", stream=True, lattice=True)
+        df_list = [data[i] for i in range(len(data))]
+        df = pd.concat(df_list, ignore_index=True)
+
+        return df.to_dict("list")
+
+
 if __name__ == '__main__':
     pass
+
+    jb = Jingbie()
+    print(jb.get_jb_table())
+
+    # print(jj.translate_symptoms())
+    # print(Jingjin.meridian_to_confluence())
+
+    # print(jj.diagnose("春分"))
+    # print(jj.symptom_zh)
 
     # l = Luo()
 
@@ -526,4 +846,3 @@ if __name__ == '__main__':
 
     # gl = GroupLuo("r", nature="atonic", hemiplegia=True)
     # print(gl.hemiplegia())
-
