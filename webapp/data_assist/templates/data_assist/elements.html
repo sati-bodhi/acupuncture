@@ -9,8 +9,16 @@
 <form class="p-3 m-3 fs-4"  method="GET"  action="{% url 'elements' %}" id="elementForm">
     {% csrf_token %}
     {% include 'data_assist/include/season_info.html' %}
-    {% include 'data_assist/include/organ_energy.html' %}
-    {% include 'data_assist/include/acute_diagnose_form.html' %}
+
+    {% if earth_energy %}
+        {% include 'data_assist/include/sp_choice.html' %}
+    {% endif %}
+
+    {% if treat_sp %}
+        {% include 'data_assist/include/organ_energy.html' %}
+        {% include 'data_assist/include/acute_diagnose_form.html' %}
+    {% endif %}
+
 
     <div class="col py-3">
         <button type="submit" class="btn btn-primary">Submit</button>

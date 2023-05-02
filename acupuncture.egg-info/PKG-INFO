@@ -1,9 +1,7 @@
 Metadata-Version: 2.1
 Name: acupuncture
-Version: 1.0
-Summary: UNKNOWN
-License: UNKNOWN
-Platform: UNKNOWN
-
-UNKNOWN
-
+Version: 2.0
+Summary: Data Assistant for Classical Acupuncture Practioners
+Home-page: https://acupunctureclassique.duckdns.org
+Author: sati
+Author-email: astyh83@gmail.com

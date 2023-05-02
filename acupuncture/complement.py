@@ -823,8 +823,8 @@ class Jingbie:
 if __name__ == '__main__':
     pass
 
-    jb = Jingbie()
-    print(jb.get_jb_table())
+    # jb = Jingbie()
+    # print(jb.get_jb_table())
 
     # print(jj.translate_symptoms())
     # print(Jingjin.meridian_to_confluence())
@@ -832,7 +832,7 @@ if __name__ == '__main__':
     # print(jj.diagnose("春分"))
     # print(jj.symptom_zh)
 
-    # l = Luo()
+    l = Luo()
 
     # l.build_db()
 
@@ -841,8 +841,8 @@ if __name__ == '__main__':
     # excess, deficiency = l.translate_symptoms()
     # print(deficiency)
 
-    # l.locate_symptom("掌灼熱")
-    # print(l.treat_symptom())
+    l.locate_symptom("鼻塞")
+    print(l.treat_symptom())
 
     # gl = GroupLuo("r", nature="atonic", hemiplegia=True)
     # print(gl.hemiplegia())

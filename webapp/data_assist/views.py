@@ -586,19 +586,21 @@ def elements(request):
 
     excess, deficient = relative_data(mother_energy, son_energy, minister_energy)
 
-    sp_energy = request.GET.get("spEnergy")
-    treat_sp = request.GET.get("treatSP")
+    # sp_energy = request.GET.get("spEnergy")
+    treat_sp = request.GET.get("sp_choice")
 
     s = Season()
     this_season = s.current_season()
     lord_id = s.seasonal_lord(this_season[0])
 
     a = Acute()
+    season_lord = "－".join(a.organ_viscera_zh(lord_id))
+    season_lord_id = lord_id
 
-    if treat_sp:
-        jun = Lord("SP")
-    else:
-        jun = Lord(lord_id)
+    if treat_sp == "SP":
+        lord_id = "SP"
+
+    jun = Lord(lord_id)
 
     mother = "－".join(a.organ_viscera_zh(jun.mother))
     son = "－".join(a.organ_viscera_zh(jun.son))
@@ -610,20 +612,22 @@ def elements(request):
 
     G, graph = a.graph()
 
-    if earth_energy:
-        sp = Lord("SP")
-        earth_lord = "－".join(a.organ_viscera_zh("SP"))
-        earth_mother = "－".join(a.organ_viscera_zh(sp.mother))
-        earth_son = "－".join(a.organ_viscera_zh(sp.son))
-        earth_minister = "－".join(a.organ_viscera_zh(sp.minister))
-        earth_inhibited = "－".join(a.organ_viscera_zh(sp.inhibited))
-    else:
-        earth_lord = earth_mother = earth_son = earth_minister = earth_inhibited = None
+    # if earth_energy:
+    #     sp = Lord("SP")
+    #     earth_lord = "－".join(a.organ_viscera_zh("SP"))
+    #     earth_mother = "－".join(a.organ_viscera_zh(sp.mother))
+    #     earth_son = "－".join(a.organ_viscera_zh(sp.son))
+    #     earth_minister = "－".join(a.organ_viscera_zh(sp.minister))
+    #     earth_inhibited = "－".join(a.organ_viscera_zh(sp.inhibited))
+    # else:
+    #     earth_lord = earth_mother = earth_son = earth_minister = earth_inhibited = None
 
-    if organ_energy is None and sp_energy is None:
+    if organ_energy is None:
         return render(request, template_name='data_assist/elements.html',
                       context={
                           "season": this_season,
+                          "season_lord_id": season_lord_id,
+                          "season_lord": season_lord,
                           "lord_id": lord_id,
                           "lord": lord,
                           "mother": mother,
@@ -631,11 +635,12 @@ def elements(request):
                           "minister": minister,
                           "inhibited": inhibited,
                           "earth_energy": earth_energy,
-                          "E_lord": earth_lord,
-                          "E_mother": earth_mother,
-                          "E_son": earth_son,
-                          "E_minister": earth_minister,
-                          "E_inhibited": earth_inhibited,
+                          "treat_sp": treat_sp,
+                          # "E_lord": earth_lord,
+                          # "E_mother": earth_mother,
+                          # "E_son": earth_son,
+                          # "E_minister": earth_minister,
+                          # "E_inhibited": earth_inhibited,
                           "graph": graph,
                       })
     else:
@@ -668,6 +673,8 @@ def elements(request):
         return render(request, template_name='data_assist/elements.html',
                       context={
                           "season": this_season,
+                          "season_lord_id": season_lord_id,
+                          "season_lord": season_lord,
                           "lord_id": lord_id,
                           "lord": lord,
                           "mother": mother,
@@ -675,11 +682,11 @@ def elements(request):
                           "minister": minister,
                           "inhibited": inhibited,
                           "earth_energy": earth_energy,
-                          "E_lord": earth_lord,
-                          "E_mother": earth_mother,
-                          "E_son": earth_son,
-                          "E_minister": earth_minister,
-                          "E_inhibited": earth_inhibited,
+                          # "E_lord": earth_lord,
+                          # "E_mother": earth_mother,
+                          # "E_son": earth_son,
+                          # "E_minister": earth_minister,
+                          # "E_inhibited": earth_inhibited,
                           "graph": graph,
                           "prescription": treatment,
                           "result": True,
@@ -926,6 +933,7 @@ def luo(request):
         elif category == "symptom":
 
             category_lbl = "縱絡"
+            symptom_query = request.GET.get("symptom_query")
             symptom = request.GET.get("symptom")
             confirm = request.GET.get("symptom_confirm")
 
@@ -962,26 +970,26 @@ def luo(request):
             elif prescription:  # for Symptom Result via single query below.
                 prescription = eval(prescription)  # convert text to code.
 
-            if symptom and confirm:
-                return render(request, template_name='data_assist/luo.html',
-                              context={  # Symptom Result via Single Query.
-                                  "result": True,
-                                  "symptom": symptom,
-                                  "symptom_id": confirm,
-                                  "diagnosis": diagnosis,
-                                  "prescription": prescription,
-                              })
+                if symptom and confirm:
+                    return render(request, template_name='data_assist/luo.html',
+                                  context={  # Symptom Result via Single Query.
+                                      "result": True,
+                                      "symptom": symptom,
+                                      "symptom_id": confirm,
+                                      "diagnosis": diagnosis,
+                                      "prescription": prescription,
+                                  })
 
 # =========================================================
 
-            elif symptom:  # query input.
+            elif symptom_query:  # query input.
 
                 luo = Luo()
-                found = luo.locate_symptom(symptom)
+                found = luo.locate_symptom(symptom_query)
 
                 if luo.target_luo:  # target found.
 
-                    query_str = symptom
+                    query_str = symptom_query
 
                     target, state = luo.target_luo
                     symptom_id = target[0][0] + state

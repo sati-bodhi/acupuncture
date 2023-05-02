@@ -1,0 +1,84 @@
+{% extends 'data_assist/fieldset.html' %}
+{% load static %}
+
+{% block fieldset_title %}
+脾土季節
+{% endblock %}
+
+{% block fieldset_content %}
+
+<p>長夏或換季前十八天，能量屬土。</p>
+<p>資訊系統以大暑至處暑為長夏。</p>
+
+<h2 class="text-secondary py-3">請選擇</h2>
+
+<div class="col-lg-5 py-3">
+
+    <div class="form-group row justify-content-center py-2">
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="sp_choice" id="treat_sp" value="SP"
+                   onclick="window.location.href='/diagnose/elements?sp_choice=SP';"
+            {% if treat_sp == "SP" %} checked {% endif %}>
+            <label class="form-check-label" for="treat_sp">
+                調脾－胃
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="sp_choice" id="treat_organ" value="{{ season_lord_id }}"
+                   onclick="window.location.href='/diagnose/elements?sp_choice={{ season_lord_id }}';"
+            {% if treat_sp == season_lord_id %} checked {% endif %}>
+            <label class="form-check-label" for="treat_organ">
+                調{{ season_lord }}
+            </label>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+<!-- What lies outside the block will not be rendered. -->
+
+<!-- radio button -->
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="" id="" value="">
+            <label class="form-check-label" for="">
+
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="" id="" value="">
+            <label class="form-check-label" for="">
+
+            </label>
+        </div>
+
+<!-- back button -->
+
+<div class="col py-3">
+    <button class="btn btn-primary" type="button" onclick="history.back()">Back</button>
+</div>
+
+<!-- Dropdown list -->
+
+<select name="" class="form-select py-1" style="font-size:20px;" id="">
+
+    {% for id, zh_name in meridian_list %}
+    <option value="{{ organ_id }}">
+        {{ zh_name }}（{{ id }}）</option>
+    {% endfor %}
+
+</select>
+
+<!-- Checkbox -->
+
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+  <label class="form-check-label" for="flexCheckDefault">
+    Default checkbox
+  </label>
+</div>

@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '218.212.40.70',
     'acupunctureclassique.duckdns.org',
+    '128.168.168.226'
 ]
 
 
@@ -55,7 +56,7 @@ INSTALLED_APPS = [
 # Cache backend is optional, but recommended to speed up user agent parsing
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': '127.0.0.1:11211',
     }
 }
@@ -179,4 +180,4 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'data_assist/static')
 ]
 
-# STATIC_ROOT = os.path.join(BASE_DIR, 'data_assist/static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')

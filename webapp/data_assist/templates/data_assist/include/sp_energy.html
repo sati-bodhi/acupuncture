@@ -6,7 +6,10 @@
 {% endblock %}
 
 {% block fieldset_content %}
-<h2 class="text-primary py-3">調{{ lord }}</h2>
+
+{% if lord != "SP" %}
+
+<h2 class="text-primary py-3">調脾土</h2>
 
 <div class="container row py-3 justify-content-center">
     <div class="row justify-content-center py-3">
@@ -16,23 +19,23 @@
     <h4 class="text-info py-1">以下相生</h4>
     <div class="row justify-content-center py-3">
         <h2 class="text-secondary py-1">母</h2>
-        {{ mother }}
+        {{ E_mother }}
     </div>
     <div class="row justify-content-center py-3">
         <h2 class="text-secondary py-1">子</h2>
-        {{ son }}
+        {{ E_son }}
     </div>
     <h4 class="text-info py-1">以下相剋</h4>
     <div class="row justify-content-center py-3">
         <h2 class="text-secondary py-1">臣</h2>
-        {{ minister }}
+        {{ E_minister }}
     </div>
     <div class="row justify-content-center py-3">
         <h2 class="text-secondary py-1">所剋之敵</h2>
-        {{ inhibited }}
+        {{ E_inhibited }}
     </div>
 </div>
-<div class="row justify-content-center py-3">
-    <img src="data:image/png;base64,{{ graph|safe }}">
-</div>
+
+{% endif %}
+
 {% endblock %}
